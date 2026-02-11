@@ -233,29 +233,37 @@ export function SleepAnalysis() {
                     </CardHeader>
                     <CardContent>
                         {analyzing ? (
-                            <div className="flex flex-col items-center justify-center py-8">
-                                <div className="relative mb-4">
-                                    <Moon className="h-12 w-12 text-sky-500 animate-pulse" />
-                                    <Sparkles className="h-6 w-6 text-sky-500 absolute -top-2 -right-2 animate-bounce" />
+                            <div className="flex items-center gap-4 py-4">
+                                <div className="relative flex-shrink-0">
+                                    <Moon className="h-8 w-8 text-sky-500 animate-pulse" />
+                                    <Sparkles className="h-4 w-4 text-sky-500 absolute -top-1 -right-1 animate-bounce" />
                                 </div>
-                                <h3 className="text-lg font-medium">Consulting AI Sleep Specialist...</h3>
-                                <p className="text-sm text-muted-foreground">Aggregating vitals and analyzing patterns over the last {period}.</p>
+                                <div>
+                                    <h3 className="text-base font-medium">Consulting AI Sleep Specialist...</h3>
+                                    <p className="text-sm text-muted-foreground">Aggregating vitals and analyzing patterns.</p>
+                                </div>
                             </div>
                         ) : insight ? (
                             <div className="prose prose-sm dark:prose-invert max-w-none">
                                 <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Moon className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-                                <h3 className="text-lg font-medium mb-2">Ready for Deep Dive?</h3>
-                                <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                                    We'll analyze your sleep score, heart rate, oxygen levels, and HRV to provide professional insights.
-                                </p>
-                                <Button onClick={() => performAnalysis()} className="gap-2 bg-sky-500 hover:bg-sky-600 border-none shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 px-6">
-                                    <Sparkles className="h-4 w-4" />
-                                    Start AI Analysis
-                                </Button>
+                            <div className="grid grid-cols-3 items-center gap-4 py-4">
+                                <div className="flex items-center gap-4 col-span-1">
+                                    <Moon className="h-8 w-8 text-sky-500 flex-shrink-0 opacity-50" />
+                                    <div>
+                                        <h3 className="text-base font-medium mb-1">Ready for Deep Dive?</h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Analyze sleep score, heart rate, oxygen levels, and HRV.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-center col-span-1">
+                                    <Button onClick={() => performAnalysis()} className="gap-2 bg-sky-500 hover:bg-sky-600 border-none shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95">
+                                        <Sparkles className="h-4 w-4" />
+                                        Start Analysis
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </CardContent>

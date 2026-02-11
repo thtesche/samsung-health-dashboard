@@ -241,29 +241,37 @@ export function HeartRateAnalysis() {
                     </CardHeader>
                     <CardContent>
                         {analyzing ? (
-                            <div className="flex flex-col items-center justify-center py-8">
-                                <div className="relative mb-4">
-                                    <Heart className="h-12 w-12 text-rose-500 animate-pulse" />
-                                    <Sparkles className="h-6 w-6 text-rose-500 absolute -top-2 -right-2 animate-bounce" />
+                            <div className="flex items-center gap-4 py-4">
+                                <div className="relative flex-shrink-0">
+                                    <Heart className="h-8 w-8 text-rose-500 animate-pulse" />
+                                    <Sparkles className="h-4 w-4 text-rose-500 absolute -top-1 -right-1 animate-bounce" />
                                 </div>
-                                <h3 className="text-lg font-medium">Consulting Cardiovascular AI...</h3>
-                                <p className="text-sm text-muted-foreground">Analyzing rhythm and recovery patterns for the last {period}.</p>
+                                <div>
+                                    <h3 className="text-base font-medium">Consulting Cardiovascular AI...</h3>
+                                    <p className="text-sm text-muted-foreground">Analyzing rhythm and recovery patterns.</p>
+                                </div>
                             </div>
                         ) : insight ? (
                             <div className="prose prose-sm dark:prose-invert max-w-none">
                                 <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Heart className="h-12 w-12 text-rose-500 mb-4 opacity-50" />
-                                <h3 className="text-lg font-medium mb-2">Analyze Cardiovascular Trends</h3>
-                                <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                                    Get deep insights into your resting heart rate and recovery capacity through HRV analysis.
-                                </p>
-                                <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none shadow-lg shadow-rose-500/20 transition-all hover:scale-105 active:scale-95 px-6">
-                                    <Sparkles className="h-4 w-4" />
-                                    Generate Heart Insights
-                                </Button>
+                            <div className="grid grid-cols-3 items-center gap-4 py-4">
+                                <div className="flex items-center gap-4 col-span-1">
+                                    <Heart className="h-8 w-8 text-rose-500 flex-shrink-0 opacity-50" />
+                                    <div>
+                                        <h3 className="text-base font-medium mb-1">Analyze Cardiovascular Trends</h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Deep insights into resting heart rate and HRV recovery.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-center col-span-1">
+                                    <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none shadow-lg shadow-rose-500/20 transition-all hover:scale-105 active:scale-95">
+                                        <Sparkles className="h-4 w-4" />
+                                        Start Analysis
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </CardContent>
