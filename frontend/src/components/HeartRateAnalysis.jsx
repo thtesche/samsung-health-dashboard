@@ -143,10 +143,12 @@ export function HeartRateAnalysis() {
                                     AI Heart Analysis
                                 </CardTitle>
                                 <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
-                                    {period === 'week' ? '7-Day Report' : '30-Day Report'}
+                                    {period === 'week' ? '7-Day Report' :
+                                        period === 'month' ? '30-Day Report' :
+                                            period === '90d' ? '90-Day Report' : '180-Day Report'}
                                 </div>
                             </div>
-                            <CardDescription>Advanced cardiovascular assessment and recovery metrics</CardDescription>
+                            <CardDescription>Advanced cardiovascular assessment and recovery metrics for the last {period === 'week' ? '7 days' : period === 'month' ? '30 days' : period === '90d' ? '90 days' : '180 days'}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="prose prose-sm dark:prose-invert max-w-none">
