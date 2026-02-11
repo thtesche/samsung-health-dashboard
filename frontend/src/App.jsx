@@ -108,9 +108,24 @@ function App() {
         </div>
 
         <nav className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-80px)]">
-          <SidebarItem icon={LayoutDashboard} label="Overview" id="overview" />
-          <SidebarItem icon={Moon} label="Sleep Analysis" id="sleep" />
-          <SidebarItem icon={Activity} label="Activity" id="activity" />
+          <SidebarItem
+            icon={LayoutDashboard}
+            label="Overview"
+            id="overview"
+            onClick={() => { setActiveTab('overview'); setInsight(null); setSelectedFileData(null); }}
+          />
+          <SidebarItem
+            icon={Moon}
+            label="Sleep Analysis"
+            id="sleep"
+            onClick={() => { setActiveTab('sleep'); setInsight(null); setSelectedFileData(null); }}
+          />
+          <SidebarItem
+            icon={Activity}
+            label="Activity"
+            id="activity"
+            onClick={() => { setActiveTab('activity'); setInsight(null); setSelectedFileData(null); }}
+          />
           <div className="pt-4 pb-2">
             <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Data</p>
           </div>
@@ -187,23 +202,23 @@ function App() {
             </div>
           )}
 
-          {insight && (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  AI Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap leading-relaxed">{insight}</p>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Dynamic Data Chart for selected file */}
           {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {insight && (
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      AI Analysis
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="whitespace-pre-wrap leading-relaxed">{insight}</p>
+                  </CardContent>
+                </Card>
+              )}
+
               {chartConfig && selectedFileData ? (
                 <DataChart
                   title={chartConfig.title}

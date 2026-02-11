@@ -76,9 +76,10 @@ class AIService:
         Performs advanced analysis on sleep data including heart rate, SpO2 and HRV.
         """
         try:
+            display_period = "7 days" if period_name == "week" else "30 days"
             # Construct a detailed prompt
             prompt = f"""
-            You are a specialized sleep doctor and data analyst. Analyze the following Samsung Health sleep data for the last {period_name}.
+            You are a specialized sleep doctor and data analyst. Analyze the following Samsung Health sleep data for the last {display_period}.
             
             Metrics:
             - Sleep Phases: {json.dumps(data.get('stages_summary', {}))}

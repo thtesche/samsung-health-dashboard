@@ -55,7 +55,7 @@ export function SleepAnalysis() {
                         onClick={() => handlePeriodChange('week')}
                         className={cn(period === 'week' && "shadow-sm")}
                     >
-                        Last Week
+                        Last 7 Days
                     </Button>
                     <Button
                         variant={period === 'month' ? 'default' : 'ghost'}
@@ -63,7 +63,7 @@ export function SleepAnalysis() {
                         onClick={() => handlePeriodChange('month')}
                         className={cn(period === 'month' && "shadow-sm")}
                     >
-                        Last Month
+                        Last 30 Days
                     </Button>
                 </div>
             </div>
@@ -117,10 +117,10 @@ export function SleepAnalysis() {
                                     AI Sleep Insights
                                 </CardTitle>
                                 <div className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold capitalize border border-primary/20">
-                                    {period === 'week' ? 'Weekly Report' : 'Monthly Report'}
+                                    {period === 'week' ? '7-Day Report' : '30-Day Report'}
                                 </div>
                             </div>
-                            <CardDescription>Comprehensive analysis for the {period} based on your health metrics</CardDescription>
+                            <CardDescription>Comprehensive analysis for the last {period === 'week' ? '7 days' : '30 days'} based on your health metrics</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="prose prose-sm dark:prose-invert max-w-none">
