@@ -155,11 +155,10 @@ function App() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto h-screen">
         <header className="h-16 border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 px-6 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-semibold capitalize">{activeTab.replace('.csv', '')}</h1>
           </div>
           <div className="flex items-center gap-2">
             {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && activeTab !== 'heart_rate' && (
