@@ -83,9 +83,9 @@ class DataLoader:
             # Create a summary for AI
             sleep_metrics = []
             if not sleep_df.empty:
-                # Convert timestamps to strings for JSON serialization
+                # Convert timestamps to strings (Date only) for JSON serialization
                 df_copy = sleep_df[['start_time', 'sleep_score', 'efficiency', 'physical_recovery', 'mental_recovery']].tail(days).copy()
-                df_copy['start_time'] = df_copy['start_time'].astype(str)
+                df_copy['start_time'] = pd.to_datetime(df_copy['start_time']).dt.strftime('%Y-%m-%d')
                 sleep_metrics = df_copy.to_dict(orient='records')
 
             # Aggregate sleep stages by duration
