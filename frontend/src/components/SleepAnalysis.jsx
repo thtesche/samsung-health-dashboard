@@ -4,6 +4,7 @@ import { Sparkles, Moon, RefreshCcw, AlertCircle, Clock, Heart, Zap, Waves } fro
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { DataChart } from './DataChart'
+import { cn } from '../lib/utils'
 
 export function SleepAnalysis() {
     const [period, setPeriod] = useState('week')
@@ -42,16 +43,18 @@ export function SleepAnalysis() {
                 </div>
                 <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
                     <Button
-                        variant={period === 'week' ? 'secondary' : 'ghost'}
+                        variant={period === 'week' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handlePeriodChange('week')}
+                        className={cn(period === 'week' && "shadow-sm")}
                     >
                         Last Week
                     </Button>
                     <Button
-                        variant={period === 'month' ? 'secondary' : 'ghost'}
+                        variant={period === 'month' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handlePeriodChange('month')}
+                        className={cn(period === 'month' && "shadow-sm")}
                     >
                         Last Month
                     </Button>
@@ -101,11 +104,16 @@ export function SleepAnalysis() {
                             <Sparkles className="h-24 w-24" />
                         </div>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-primary" />
-                                AI Sleep Insights
-                            </CardTitle>
-                            <CardDescription>Analysis based on your health data trends for the {period}</CardDescription>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-primary" />
+                                    AI Sleep Insights
+                                </CardTitle>
+                                <div className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold capitalize border border-primary/20">
+                                    {period === 'week' ? 'Weekly Report' : 'Monthly Report'}
+                                </div>
+                            </div>
+                            <CardDescription>Comprehensive analysis for the {period} based on your health metrics</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="prose prose-sm dark:prose-invert max-w-none">
