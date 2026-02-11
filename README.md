@@ -15,7 +15,11 @@ Before you begin, ensure you have the following installed:
 - **Python 3.10+**
 - **Node.js (v18+) & npm**
 - **Ollama**: For local AI analysis. [Download Ollama here](https://ollama.com/).
-  - After installing Ollama, pull the default model: `ollama pull mistral`
+  - After installing Ollama, download and run the model using your terminal:
+    ```bash
+    ollama run mistral
+    ```
+    *(Note: This command will download the model if it's not already present and start an interactive session. You can exit the session with `/exit`, but the Ollama service must remain running in the background for the dashboard to work.)*
 
 ## Project Structure
 
