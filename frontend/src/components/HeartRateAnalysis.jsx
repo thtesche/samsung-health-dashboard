@@ -11,7 +11,25 @@ export function HeartRateAnalysis() {
     const [analyzing, setAnalyzing] = useState(false)
     const [insight, setInsight] = useState(null)
     const [data, setData] = useState(null)
+    const [loadingData, setLoadingData] = useState(false)
     const [error, setError] = useState(null)
+
+    const fetchDataOnly = async (p = period) => {
+        setLoadingData(true)
+        setError(null)
+        try {
+            const response = await axios.post('http://localhost:8000/api/analyze/heart_rate/advanced', {
+                period: p,
+                skip_analysis: true
+            })
+            setData(response.data.data_used)
+        } catch (err) {
+            console.error("Data fetch failed:", err)
+            setError("Failed to fetch heart rate data for the selected period.")
+        } finally {
+            setLoadingData(false)
+        }
+    }
 
     const performAnalysis = async (p = period) => {
         setAnalyzing(true)
@@ -31,8 +49,16 @@ export function HeartRateAnalysis() {
 
     const handlePeriodChange = (newPeriod) => {
         setPeriod(newPeriod)
-        if (insight) performAnalysis(newPeriod)
+        if (insight) {
+            performAnalysis(newPeriod)
+        } else {
+            fetchDataOnly(newPeriod)
+        }
     }
+
+    useEffect(() => {
+        fetchDataOnly()
+    }, [])
 
     const TrendBadge = ({ trend, invert = false }) => {
         if (trend === 0 || trend === null) return null;
@@ -94,7 +120,7 @@ export function HeartRateAnalysis() {
                 </div>
             </div>
 
-            {!insight && !analyzing && !error && (
+            {(!insight && !analyzing && !error) && (
                 <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center">
                     <Heart className="h-12 w-12 text-rose-500 mb-4 opacity-50" />
                     <h3 className="text-lg font-medium">Analyze Cardiovascular Trends</h3>
@@ -130,136 +156,140 @@ export function HeartRateAnalysis() {
                 </Card>
             )}
 
-            {insight && (
-                <div className="flex flex-col gap-6">
-                    {data?.metrics && (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <Card className="flex flex-col h-full">
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <Activity className="h-3 w-3" /> Avg HR
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hr_avg.trend} invert />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_avg.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Beats per minute</p>
-                                </CardContent>
-                            </Card>
+            <div className={cn("flex flex-col gap-6 transition-opacity", loadingData && "opacity-50 pointer-events-none")}>
+                {loadingData && !data && (
+                    <div className="flex items-center justify-center p-12">
+                        <RefreshCcw className="h-8 w-8 text-rose-500 animate-spin" />
+                    </div>
+                )}
 
-                            <Card className="flex flex-col h-full">
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <Heart className="h-3 w-3" /> Avg sleeping HR
-                                        </CardTitle>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_sleeping.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">During sleep sessions</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="flex flex-col h-full">
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <TrendingDown className="h-3 w-3" /> Min HR
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hr_min.trend} invert />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_min.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Resting HR</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="flex flex-col h-full">
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <TrendingUp className="h-3 w-3" /> Max HR
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hr_max.trend} />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_max.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Peak recorded</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="flex flex-col h-full">
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <Zap className="h-3 w-3" /> HRV
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hrv.trend} />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hrv.value?.toFixed(1) || 'N/A'} <span className="text-xs font-normal text-muted-foreground">ms</span></div>
-                                    <p className="text-xs text-muted-foreground">Recovery capacity</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
-
-                    <Card className="bg-rose-50/50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/50 overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Heart className="h-24 w-24 text-rose-600" />
-                        </div>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-rose-600" />
-                                    AI Heart Analysis
-                                </CardTitle>
-                                <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
-                                    {period === 'week' ? '7-Day Report' :
-                                        period === 'month' ? '30-Day Report' :
-                                            period === '90d' ? '90-Day Report' : '180-Day Report'}
+                {data?.metrics && (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Activity className="h-3 w-3" /> Avg HR
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.hr_avg.trend} invert />
                                 </div>
-                            </div>
-                            <CardDescription>Advanced cardiovascular assessment and recovery metrics for the last {period === 'week' ? '7 days' : period === 'month' ? '30 days' : period === '90d' ? '90 days' : '180 days'}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{data.metrics.hr_avg.value?.toFixed(1) || 'N/A'}</div>
+                                <p className="text-xs text-muted-foreground">Beats per minute</p>
+                            </CardContent>
+                        </Card>
 
-                    {data?.hr_metrics?.length > 0 && (
-                        <DataChart
-                            title="Daily Average Heart Rate"
-                            description={`Trends over the last ${period}`}
-                            data={data.hr_metrics}
-                            dataKey="heart_rate"
-                            category="day"
-                            type="area"
-                            yAxisInterval={10}
-                        />
-                    )}
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Heart className="h-3 w-3" /> Avg sleeping HR
+                                    </CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{data.metrics.hr_sleeping.value?.toFixed(1) || 'N/A'}</div>
+                                <p className="text-xs text-muted-foreground">During sleep sessions</p>
+                            </CardContent>
+                        </Card>
 
-                    {data?.sleeping_hr_metrics?.length > 0 && (
-                        <DataChart
-                            title="Average Sleeping Heart Rate"
-                            description={`Heart rate during sleep intervals over the last ${period}`}
-                            data={data.sleeping_hr_metrics}
-                            dataKey="sleeping_heart_rate"
-                            category="day"
-                            type="area"
-                            yAxisInterval={10}
-                        />
-                    )}
-                </div>
-            )}
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <TrendingDown className="h-3 w-3" /> Min HR
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.hr_min.trend} invert />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{data.metrics.hr_min.value?.toFixed(1) || 'N/A'}</div>
+                                <p className="text-xs text-muted-foreground">Resting HR</p>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <TrendingUp className="h-3 w-3" /> Max HR
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.hr_max.trend} />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{data.metrics.hr_max.value?.toFixed(1) || 'N/A'}</div>
+                                <p className="text-xs text-muted-foreground">Peak recorded</p>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Zap className="h-3 w-3" /> HRV
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.hrv.trend} />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{data.metrics.hrv.value?.toFixed(1) || 'N/A'} <span className="text-xs font-normal text-muted-foreground">ms</span></div>
+                                <p className="text-xs text-muted-foreground">Recovery capacity</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                <Card className="bg-rose-50/50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/50 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Heart className="h-24 w-24 text-rose-600" />
+                    </div>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <Sparkles className="h-5 w-5 text-rose-600" />
+                                AI Heart Analysis
+                            </CardTitle>
+                            <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
+                                {period === 'week' ? '7-Day Report' :
+                                    period === 'month' ? '30-Day Report' :
+                                        period === '90d' ? '90-Day Report' : '180-Day Report'}
+                            </div>
+                        </div>
+                        <CardDescription>Advanced cardiovascular assessment and recovery metrics for the last {period === 'week' ? '7 days' : period === 'month' ? '30 days' : period === '90d' ? '90 days' : '180 days'}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {data?.hr_metrics?.length > 0 && (
+                    <DataChart
+                        title="Daily Average Heart Rate"
+                        description={`Trends over the last ${period}`}
+                        data={data.hr_metrics}
+                        dataKey="heart_rate"
+                        category="day"
+                        type="area"
+                        yAxisInterval={10}
+                    />
+                )}
+
+                {data?.sleeping_hr_metrics?.length > 0 && (
+                    <DataChart
+                        title="Average Sleeping Heart Rate"
+                        description={`Heart rate during sleep intervals over the last ${period}`}
+                        data={data.sleeping_hr_metrics}
+                        dataKey="sleeping_heart_rate"
+                        category="day"
+                        type="area"
+                        yAxisInterval={10}
+                    />
+                )}
+            </div>
         </div>
     )
 }
