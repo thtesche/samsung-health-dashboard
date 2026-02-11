@@ -155,14 +155,16 @@ function App() {
             <h1 className="text-xl font-semibold capitalize">{activeTab.replace('.csv', '')}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleGenerateInsight}
-              disabled={activeTab === 'overview' || activeTab === 'sleep' || activeTab === 'activity' || analyzing}
-              className="gap-2"
-            >
-              <Sparkles className="h-4 w-4" />
-              {analyzing ? "Analyzing..." : "Generate AI Insights"}
-            </Button>
+            {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && (
+              <Button
+                onClick={handleGenerateInsight}
+                disabled={analyzing}
+                className="gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                {analyzing ? "Analyzing..." : "Generate AI Insights"}
+              </Button>
+            )}
           </div>
         </header>
 
