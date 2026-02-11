@@ -1,4 +1,6 @@
-cleaned/
+# Ignore contents of cleaned folder but keep the folder itself
+cleaned/*
+!cleaned/.gitkeep
 venv/
 .DS_Store
 __pycache__/

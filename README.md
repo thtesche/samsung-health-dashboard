@@ -25,7 +25,7 @@ Before you begin, ensure you have the following installed:
 
 - `backend/`: FastAPI application handling data processing and AI integration.
 - `frontend/`: React components and dashboard UI.
-- `cleaned/`: (Excluded from Git) Folder for processed health data.
+- `cleaned/`: This folder should contain your cleaned health data. Use the [samsung_health_data_cleaner](https://github.com/thtesche/samsung_health_data_cleaner) to generate the required files.
 
 ---
 
