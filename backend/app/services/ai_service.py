@@ -90,10 +90,11 @@ class AIService:
             {json.dumps(data.get('sleep_metrics', [])[-7:])}
             
             Please provide:
-            1. A summary of sleep quality.
-            2. Relationship between heart rate/HRV and sleep recovery.
-            3. Evaluation of oxygen saturation (looking for potential issues).
-            4. Concrete recommendations for improvement.
+            1. A summary of sleep quality and consistency.
+            2. Detailed evaluation of sleep stage distribution (REM, Deep, Light) - is the ratio healthy?
+            3. Relationship between heart rate/HRV and sleep recovery.
+            4. Evaluation of oxygen saturation (looking for potential issues).
+            5. Concrete recommendations for improvement.
             
             Keep it professional and insightful.
             """

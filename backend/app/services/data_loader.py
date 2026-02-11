@@ -88,9 +88,21 @@ class DataLoader:
                 df_copy['start_time'] = df_copy['start_time'].astype(str)
                 sleep_metrics = df_copy.to_dict(orient='records')
 
+            # Aggregate sleep stages by duration
+            stages_summary = {}
+            if not stages_df.empty and 'start_time' in stages_df.columns and 'end_time' in stages_df.columns:
+                try:
+                    stages_df['start_time'] = pd.to_datetime(stages_df['start_time'])
+                    stages_df['end_time'] = pd.to_datetime(stages_df['end_time'])
+                    stages_df['duration_min'] = (stages_df['end_time'] - stages_df['start_time']).dt.total_seconds() / 60
+                    # Sum up durations per stage and round to 1 decimal
+                    stages_summary = stages_df.groupby('stage')['duration_min'].sum().round(1).to_dict()
+                except Exception as e:
+                    print(f"Error processing stages: {e}")
+
             summary = {
                 "sleep_metrics": sleep_metrics,
-                "stages_summary": stages_df['stage'].value_counts().to_dict() if not stages_df.empty else {},
+                "stages_summary": stages_summary,
                 "hr_avg": hr_df['heart_rate'].mean() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
                 "hr_min": hr_df['heart_rate'].min() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
                 "spo2_avg": spo2_df['spo2'].mean() if not spo2_df.empty and 'spo2' in spo2_df.columns else None,
