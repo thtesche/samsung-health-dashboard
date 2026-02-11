@@ -41,6 +41,19 @@ export function SleepAnalysis() {
         performAnalysis(newPeriod)
     }
 
+    const TrendBadge = ({ trend }) => {
+        if (trend === 0 || trend === null) return null;
+        const isPositive = trend > 0;
+        return (
+            <div className={cn(
+                "flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto",
+                isPositive ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+            )}>
+                {isPositive ? '↑' : '↓'} {Math.abs(trend).toFixed(1)}%
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -129,17 +142,20 @@ export function SleepAnalysis() {
                         </CardContent>
                     </Card>
 
-                    {data && (
+                    {data?.metrics && (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {/* 1. Total Duration */}
                             <Card>
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Clock className="h-3 w-3" /> Total Duration
-                                    </CardTitle>
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Clock className="h-3 w-3" /> Total Duration
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.sleep_duration.trend} />
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{formatDuration(data.sleep_duration_avg)}</div>
+                                    <div className="text-2xl font-bold">{formatDuration(data.metrics.sleep_duration.value)}</div>
                                     <p className="text-xs text-muted-foreground">Avg per night</p>
                                 </CardContent>
                             </Card>
@@ -147,16 +163,16 @@ export function SleepAnalysis() {
                             {/* 2. Sleep Efficiency */}
                             <Card>
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Activity className="h-3 w-3" /> Sleep Efficiency
-                                    </CardTitle>
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Activity className="h-3 w-3" /> Sleep Efficiency
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.efficiency.trend} />
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">
-                                        {data.sleep_metrics?.length > 0
-                                            ? `${(data.sleep_metrics.reduce((acc, curr) => acc + curr.efficiency, 0) / data.sleep_metrics.length).toFixed(1)}%`
-                                            : 'N/A'
-                                        }
+                                        {data.metrics.efficiency.value ? `${data.metrics.efficiency.value.toFixed(1)}%` : 'N/A'}
                                     </div>
                                     <p className="text-xs text-muted-foreground">Avg for {period}</p>
                                 </CardContent>
@@ -165,12 +181,15 @@ export function SleepAnalysis() {
                             {/* 3. HRV */}
                             <Card>
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Zap className="h-3 w-3" /> HRV (Recovery)
-                                    </CardTitle>
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Zap className="h-3 w-3" /> HRV (Recovery)
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hrv.trend} />
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{data.hrv_avg ? `${data.hrv_avg.toFixed(1)} ms` : 'N/A'}</div>
+                                    <div className="text-2xl font-bold">{data.metrics.hrv.value ? `${data.metrics.hrv.value.toFixed(1)} ms` : 'N/A'}</div>
                                     <p className="text-xs text-muted-foreground">Average during sleep</p>
                                 </CardContent>
                             </Card>
@@ -178,26 +197,32 @@ export function SleepAnalysis() {
                             {/* 4. Heart Rate */}
                             <Card>
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Heart className="h-3 w-3" /> Heart Rate (Avg)
-                                    </CardTitle>
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Heart className="h-3 w-3" /> Heart Rate (Avg)
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr.trend * -1} /> {/* Invert for HR: lower is better trend */}
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{data.hr_avg ? `${data.hr_avg.toFixed(1)} bpm` : 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Min {data.hr_min?.toFixed(1) || 'N/A'}</p>
+                                    <div className="text-2xl font-bold">{data.metrics.hr.value ? `${data.metrics.hr.value.toFixed(1)} bpm` : 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Min {data.metrics.hr.min?.toFixed(1) || 'N/A'}</p>
                                 </CardContent>
                             </Card>
 
                             {/* 5. SpO2 */}
                             <Card>
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Waves className="h-3 w-3" /> Oxygen SpO2
-                                    </CardTitle>
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Waves className="h-3 w-3" /> Oxygen SpO2
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.spo2.trend} />
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{data.spo2_avg ? `${data.spo2_avg.toFixed(1)}%` : 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Min {data.spo2_min?.toFixed(1) || 'N/A'}%</p>
+                                    <div className="text-2xl font-bold">{data.metrics.spo2.value ? `${data.metrics.spo2.value.toFixed(1)}%` : 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Min {data.metrics.spo2.min?.toFixed(1) || 'N/A'}%</p>
                                 </CardContent>
                             </Card>
                         </div>

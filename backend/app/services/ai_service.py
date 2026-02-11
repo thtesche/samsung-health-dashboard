@@ -77,15 +77,22 @@ class AIService:
         """
         try:
             display_period = "7 days" if period_name == "week" else "30 days"
+            metrics = data.get('metrics', {})
+            hr = metrics.get('hr', {})
+            spo2 = metrics.get('spo2', {})
+            hrv = metrics.get('hrv', {})
+            duration = metrics.get('sleep_duration', {})
+
             # Construct a detailed prompt
             prompt = f"""
             You are a specialized sleep doctor and data analyst. Analyze the following Samsung Health sleep data for the last {display_period}.
             
             Metrics:
-            - Sleep Phases: {json.dumps(data.get('stages_summary', {}))}
-            - Avg Heart Rate: {data.get('hr_avg', 'N/A'):.1f} bpm (Min: {data.get('hr_min', 'N/A'):.1f})
-            - Avg SpO2 (Oxygen): {data.get('spo2_avg', 'N/A'):.1f}% (Min: {data.get('spo2_min', 'N/A'):.1f}%)
-            - Avg HRV (Recovery): {data.get('hrv_avg', 'N/A'):.1f} ms
+            - Avg Sleep duration: {duration.get('value', 0) / 60 if duration.get('value') else 0:.1f} hours
+            - Sleep Phases (Total min): {json.dumps(data.get('stages_summary', {}))}
+            - Avg Heart Rate: {hr.get('value', 0) if hr.get('value') else 0:.1f} bpm (Min: {hr.get('min', 0) if hr.get('min') else 0:.1f})
+            - Avg SpO2 (Oxygen): {spo2.get('value', 0) if spo2.get('value') else 0:.1f}% (Min: {spo2.get('min', 0) if spo2.get('min') else 0:.1f}%)
+            - Avg HRV (Recovery): {hrv.get('value', 0) if hrv.get('value') else 0:.1f} ms
             
             Sleep Trend (Last Entries):
             {json.dumps(data.get('sleep_metrics', [])[-7:])}

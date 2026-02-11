@@ -67,48 +67,81 @@ class DataLoader:
         """Aggregates multiple data sources for advanced sleep analysis."""
         summary = {}
         try:
-            # Helper to safely load data
-            def safe_fetch(filename):
+            # Helper to load data for range
+            def safe_fetch_range(filename, start_days, end_days):
                 try:
-                    return self.get_data_for_period(filename, days)
+                    df = self.load_csv(filename)
+                    time_col = next((c for c in ['create_time', 'start_time', 'time'] if c in df.columns), None)
+                    if not time_col: return df
+                    df[time_col] = pd.to_datetime(df[time_col])
+                    now = pd.Timestamp.now()
+                    cutoff_start = now - pd.Timedelta(days=start_days)
+                    cutoff_end = now - pd.Timedelta(days=end_days)
+                    return df[(df[time_col] >= cutoff_start) & (df[time_col] < cutoff_end)]
                 except:
                     return pd.DataFrame()
 
-            sleep_df = safe_fetch("sleep.csv")
-            stages_df = safe_fetch("sleep_stage.csv")
-            hr_df = safe_fetch("heart_rate.csv")
-            spo2_df = safe_fetch("oxygen_saturation.csv")
-            vitality_df = safe_fetch("vitality_score.csv")
+            # Fetch current and previous periods
+            sleep_df = safe_fetch_range("sleep.csv", days, 0)
+            prev_sleep_df = safe_fetch_range("sleep.csv", days * 2, days)
             
+            hr_df = safe_fetch_range("heart_rate.csv", days, 0)
+            prev_hr_df = safe_fetch_range("heart_rate.csv", days * 2, days)
+            
+            spo2_df = safe_fetch_range("oxygen_saturation.csv", days, 0)
+            prev_spo2_df = safe_fetch_range("oxygen_saturation.csv", days * 2, days)
+            
+            vitality_df = safe_fetch_range("vitality_score.csv", days, 0)
+            prev_vitality_df = safe_fetch_range("vitality_score.csv", days * 2, days)
+
+            stages_df = safe_fetch_range("sleep_stage.csv", days, 0)
+
             # Create a summary for AI
             sleep_metrics = []
             if not sleep_df.empty:
-                # Convert timestamps to strings (Date only) for JSON serialization
                 df_copy = sleep_df[['start_time', 'sleep_score', 'efficiency', 'sleep_duration', 'physical_recovery', 'mental_recovery']].tail(days).copy()
                 df_copy['start_time'] = pd.to_datetime(df_copy['start_time']).dt.strftime('%Y-%m-%d')
                 sleep_metrics = df_copy.to_dict(orient='records')
 
-            # Aggregate sleep stages by duration
+            # Aggregate sleep stages
             stages_summary = {}
             if not stages_df.empty and 'start_time' in stages_df.columns and 'end_time' in stages_df.columns:
                 try:
-                    stages_df['start_time'] = pd.to_datetime(stages_df['start_time'])
-                    stages_df['end_time'] = pd.to_datetime(stages_df['end_time'])
-                    stages_df['duration_min'] = (stages_df['end_time'] - stages_df['start_time']).dt.total_seconds() / 60
-                    # Sum up durations per stage and round to 1 decimal
+                    stages_df['duration_min'] = (pd.to_datetime(stages_df['end_time']) - pd.to_datetime(stages_df['start_time'])).dt.total_seconds() / 60
                     stages_summary = stages_df.groupby('stage')['duration_min'].sum().round(1).to_dict()
-                except Exception as e:
-                    print(f"Error processing stages: {e}")
+                except: pass
+
+            def calc_trend(curr_val, prev_val):
+                if not curr_val or not prev_val or prev_val == 0: return 0
+                return ((curr_val - prev_val) / prev_val) * 100
 
             summary = {
                 "sleep_metrics": sleep_metrics,
                 "stages_summary": stages_summary,
-                "sleep_duration_avg": sleep_df['sleep_duration'].mean() if not sleep_df.empty and 'sleep_duration' in sleep_df.columns else None,
-                "hr_avg": hr_df['heart_rate'].mean() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
-                "hr_min": hr_df['heart_rate'].min() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
-                "spo2_avg": spo2_df['spo2'].mean() if not spo2_df.empty and 'spo2' in spo2_df.columns else None,
-                "spo2_min": spo2_df['spo2'].min() if not spo2_df.empty and 'spo2' in spo2_df.columns else None,
-                "hrv_avg": vitality_df['shrv_value'].mean() if not vitality_df.empty and 'shrv_value' in vitality_df.columns else None
+                "metrics": {
+                    "sleep_duration": {
+                        "value": sleep_df['sleep_duration'].mean() if not sleep_df.empty else None,
+                        "trend": calc_trend(sleep_df['sleep_duration'].mean(), prev_sleep_df['sleep_duration'].mean()) if not sleep_df.empty and not prev_sleep_df.empty else 0
+                    },
+                    "efficiency": {
+                        "value": sleep_df['efficiency'].mean() if not sleep_df.empty else None,
+                        "trend": calc_trend(sleep_df['efficiency'].mean(), prev_sleep_df['efficiency'].mean()) if not sleep_df.empty and not prev_sleep_df.empty else 0
+                    },
+                    "hr": {
+                        "value": hr_df['heart_rate'].mean() if not hr_df.empty else None,
+                        "min": hr_df['heart_rate'].min() if not hr_df.empty else None,
+                        "trend": calc_trend(hr_df['heart_rate'].mean(), prev_hr_df['heart_rate'].mean()) if not hr_df.empty and not prev_hr_df.empty else 0
+                    },
+                    "spo2": {
+                        "value": spo2_df['spo2'].mean() if not spo2_df.empty else None,
+                        "min": spo2_df['spo2'].min() if not spo2_df.empty else None,
+                        "trend": calc_trend(spo2_df['spo2'].mean(), prev_spo2_df['spo2'].mean()) if not spo2_df.empty and not prev_spo2_df.empty else 0
+                    },
+                    "hrv": {
+                        "value": vitality_df['shrv_value'].mean() if not vitality_df.empty else None,
+                        "trend": calc_trend(vitality_df['shrv_value'].mean(), prev_vitality_df['shrv_value'].mean()) if not vitality_df.empty and not prev_vitality_df.empty else 0
+                    }
+                }
             }
             return summary
         except Exception as e:
