@@ -1,0 +1,13 @@
+cleaned/
+venv/
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.env
+.python-version
+.vscode/
+frontend/node_modules/
+frontend/dist/
+backend/__pycache__/
