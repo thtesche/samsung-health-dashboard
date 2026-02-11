@@ -75,6 +75,22 @@ export function HeartRateAnalysis() {
                     >
                         30 Days
                     </Button>
+                    <Button
+                        variant={period === '90d' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => handlePeriodChange('90d')}
+                        className={cn(period === '90d' && "shadow-sm")}
+                    >
+                        90 Days
+                    </Button>
+                    <Button
+                        variant={period === '180d' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => handlePeriodChange('180d')}
+                        className={cn(period === '180d' && "shadow-sm")}
+                    >
+                        180 Days
+                    </Button>
                 </div>
             </div>
 

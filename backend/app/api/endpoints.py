@@ -76,9 +76,10 @@ async def analyze_sleep_advanced(period: str = Body(..., embed=True)):
         raise HTTPException(status_code=500, detail=str(e))
 @router.post("/analyze/heart_rate/advanced")
 async def analyze_heart_rate_advanced(period: str = Body(..., embed=True)):
-    """Generate advanced heart rate insights for a week or month."""
+    """Generate advanced heart rate insights for varying periods."""
     try:
-        days = 7 if period == "week" else 30
+        period_map = {"week": 7, "month": 30, "90d": 90, "180d": 180}
+        days = period_map.get(period, 30)
         data = data_loader.aggregate_heart_rate_data(days)
         
         if not data or not data.get('metrics'):

@@ -76,7 +76,8 @@ class AIService:
         Performs advanced analysis on heart rate data including resting HR and HRV.
         """
         try:
-            display_period = "7 days" if period_name == "week" else "30 days"
+            period_map = {"week": "7 days", "month": "30 days", "90d": "90 days", "180d": "180 days"}
+            display_period = period_map.get(period_name, period_name)
             metrics = data.get('metrics', {})
             hr_avg = metrics.get('hr_avg', {})
             hr_min = metrics.get('hr_min', {})
