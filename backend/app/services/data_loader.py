@@ -86,6 +86,8 @@ class DataLoader:
             vitality_df = safe_fetch_range("vitality_score.csv", days, 0)
             prev_vitality_df = safe_fetch_range("vitality_score.csv", days * 2, days)
 
+            sleep_df = safe_fetch_range("sleep.csv", days, 0)
+
             def calc_trend(curr_val, prev_val):
                 if not curr_val or not prev_val or prev_val == 0: return 0
                 return ((curr_val - prev_val) / prev_val) * 100
@@ -98,12 +100,42 @@ class DataLoader:
                 df_grouped['day'] = df_grouped[time_col].dt.strftime('%Y-%m-%d')
                 hr_metrics = df_grouped.groupby('day')['heart_rate'].mean().reset_index().to_dict(orient='records')
 
+            # Sleeping HR Calculation
+            sleeping_hr_metrics = []
+            sleeping_hr_avg = None
+            if not sleep_df.empty and not hr_df.empty:
+                session_averages = []
+                # Ensure datetime for comparison
+                hr_temp = hr_df.copy()
+                hr_time_col = next((c for c in ['create_time', 'start_time', 'time'] if c in hr_temp.columns), None)
+                hr_temp[hr_time_col] = pd.to_datetime(hr_temp[hr_time_col])
+                
+                for _, session in sleep_df.iterrows():
+                    start = pd.to_datetime(session['start_time'])
+                    end = pd.to_datetime(session['end_time'])
+                    # Filter HR for this session
+                    session_hr = hr_temp[(hr_temp[hr_time_col] >= start) & (hr_temp[hr_time_col] <= end)]
+                    if not session_hr.empty:
+                        avg_hr = session_hr['heart_rate'].mean()
+                        session_averages.append({
+                            "day": start.strftime('%Y-%m-%d'),
+                            "sleeping_heart_rate": round(avg_hr, 1)
+                        })
+                sleeping_hr_metrics = session_averages
+                if session_averages:
+                    sleeping_hr_avg = sum(s['sleeping_heart_rate'] for s in session_averages) / len(session_averages)
+
             summary = {
                 "hr_metrics": hr_metrics,
+                "sleeping_hr_metrics": sleeping_hr_metrics,
                 "metrics": {
                     "hr_avg": {
                         "value": hr_df['heart_rate'].mean() if not hr_df.empty else None,
                         "trend": calc_trend(hr_df['heart_rate'].mean(), prev_hr_df['heart_rate'].mean()) if not hr_df.empty and not prev_hr_df.empty else 0
+                    },
+                    "hr_sleeping": {
+                        "value": sleeping_hr_avg,
+                        "trend": 0 # Trend calculation for sleeping HR would require previous period sleep data
                     },
                     "hr_min": {
                         "value": hr_df['heart_rate'].min() if not hr_df.empty else None,

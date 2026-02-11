@@ -176,6 +176,20 @@ export function HeartRateAnalysis() {
                                 <CardHeader className="pb-2">
                                     <div className="flex items-center">
                                         <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Heart className="h-3 w-3" /> Avg sleeping HR
+                                        </CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_sleeping.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">During sleep sessions</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
                                             <TrendingDown className="h-3 w-3" /> Min HR
                                         </CardTitle>
                                         <TrendBadge trend={data.metrics.hr_min.trend} invert />
@@ -227,6 +241,19 @@ export function HeartRateAnalysis() {
                             dataKey="heart_rate"
                             category="day"
                             type="area"
+                            yAxisInterval={10}
+                        />
+                    )}
+
+                    {data?.sleeping_hr_metrics?.length > 0 && (
+                        <DataChart
+                            title="Average Sleeping Heart Rate"
+                            description={`Heart rate during sleep intervals over the last ${period}`}
+                            data={data.sleeping_hr_metrics}
+                            dataKey="sleeping_heart_rate"
+                            category="day"
+                            type="area"
+                            yAxisInterval={10}
                         />
                     )}
                 </div>
