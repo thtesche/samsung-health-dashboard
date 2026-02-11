@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Sparkles, Moon, RefreshCcw, AlertCircle, Clock, Heart, Zap, Waves } from 'lucide-react'
+import { Sparkles, Moon, RefreshCcw, AlertCircle, Clock, Heart, Zap, Waves, Activity } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { DataChart } from './DataChart'
@@ -130,7 +130,8 @@ export function SleepAnalysis() {
                     </Card>
 
                     {data && (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {/* 1. Total Duration */}
                             <Card>
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
@@ -142,28 +143,26 @@ export function SleepAnalysis() {
                                     <p className="text-xs text-muted-foreground">Avg per night</p>
                                 </CardContent>
                             </Card>
+
+                            {/* 2. Sleep Efficiency */}
                             <Card>
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Heart className="h-3 w-3" /> Heart Rate (Avg)
+                                        <Activity className="h-3 w-3" /> Sleep Efficiency
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{data.hr_avg ? `${data.hr_avg.toFixed(1)} bpm` : 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Min {data.hr_min?.toFixed(1) || 'N/A'}</p>
+                                    <div className="text-2xl font-bold">
+                                        {data.sleep_metrics?.length > 0
+                                            ? `${(data.sleep_metrics.reduce((acc, curr) => acc + curr.efficiency, 0) / data.sleep_metrics.length).toFixed(1)}%`
+                                            : 'N/A'
+                                        }
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Avg for {period}</p>
                                 </CardContent>
                             </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Waves className="h-3 w-3" /> Oxygen SpO2
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.spo2_avg ? `${data.spo2_avg.toFixed(1)}%` : 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Min {data.spo2_min?.toFixed(1) || 'N/A'}%</p>
-                                </CardContent>
-                            </Card>
+
+                            {/* 3. HRV */}
                             <Card>
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
@@ -175,20 +174,30 @@ export function SleepAnalysis() {
                                     <p className="text-xs text-muted-foreground">Average during sleep</p>
                                 </CardContent>
                             </Card>
+
+                            {/* 4. Heart Rate */}
                             <Card>
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                        <Clock className="h-3 w-3" /> Sleep Eficiency
+                                        <Heart className="h-3 w-3" /> Heart Rate (Avg)
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">
-                                        {data.sleep_metrics?.length > 0
-                                            ? `${(data.sleep_metrics.reduce((acc, curr) => acc + curr.efficiency, 0) / data.sleep_metrics.length).toFixed(1)}%`
-                                            : 'N/A'
-                                        }
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Avg for {period}</p>
+                                    <div className="text-2xl font-bold">{data.hr_avg ? `${data.hr_avg.toFixed(1)} bpm` : 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Min {data.hr_min?.toFixed(1) || 'N/A'}</p>
+                                </CardContent>
+                            </Card>
+
+                            {/* 5. SpO2 */}
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Waves className="h-3 w-3" /> Oxygen SpO2
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.spo2_avg ? `${data.spo2_avg.toFixed(1)}%` : 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Min {data.spo2_min?.toFixed(1) || 'N/A'}%</p>
                                 </CardContent>
                             </Card>
                         </div>
