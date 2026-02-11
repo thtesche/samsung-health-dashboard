@@ -120,31 +120,6 @@ export function HeartRateAnalysis() {
                 </div>
             </div>
 
-            {(!insight && !analyzing && !error) && (
-                <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center">
-                    <Heart className="h-12 w-12 text-rose-500 mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium">Analyze Cardiovascular Trends</h3>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                        Get deep insights into your resting heart rate and recovery capacity through HRV analysis.
-                    </p>
-                    <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none shadow-lg shadow-rose-500/20 transition-all hover:scale-105 active:scale-95 px-6">
-                        <Sparkles className="h-4 w-4" />
-                        Generate Heart Insights
-                    </Button>
-                </Card>
-            )}
-
-            {analyzing && (
-                <Card className="p-12 flex flex-col items-center justify-center text-center">
-                    <div className="relative mb-4">
-                        <Heart className="h-12 w-12 text-rose-500 animate-pulse" />
-                        <Sparkles className="h-6 w-6 text-rose-500 absolute -top-2 -right-2 animate-bounce" />
-                    </div>
-                    <h3 className="text-lg font-medium">Consulting Cardiovascular AI...</h3>
-                    <p className="text-sm text-muted-foreground">Analyzing rhythm and recovery patterns for the last {period}.</p>
-                </Card>
-            )}
-
             {error && (
                 <Card className="border-destructive/50 bg-destructive/5 p-6 flex items-start gap-4">
                     <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
@@ -241,6 +216,7 @@ export function HeartRateAnalysis() {
                     </div>
                 )}
 
+                {/* Unified AI Analysis Card */}
                 <Card className="bg-rose-50/50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/50 overflow-hidden relative">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
                         <Heart className="h-24 w-24 text-rose-600" />
@@ -251,18 +227,45 @@ export function HeartRateAnalysis() {
                                 <Sparkles className="h-5 w-5 text-rose-600" />
                                 AI Heart Analysis
                             </CardTitle>
-                            <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
-                                {period === 'week' ? '7-Day Report' :
-                                    period === 'month' ? '30-Day Report' :
-                                        period === '90d' ? '90-Day Report' : '180-Day Report'}
-                            </div>
+                            {insight && (
+                                <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
+                                    {period === 'week' ? '7-Day Report' :
+                                        period === 'month' ? '30-Day Report' :
+                                            period === '90d' ? '90-Day Report' : '180-Day Report'}
+                                </div>
+                            )}
                         </div>
-                        <CardDescription>Advanced cardiovascular assessment and recovery metrics for the last {period === 'week' ? '7 days' : period === 'month' ? '30 days' : period === '90d' ? '90 days' : '180 days'}</CardDescription>
+                        {insight && (
+                            <CardDescription>Advanced cardiovascular assessment and recovery metrics for the last {period === 'week' ? '7 days' : period === 'month' ? '30 days' : period === '90d' ? '90 days' : '180 days'}</CardDescription>
+                        )}
                     </CardHeader>
                     <CardContent>
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
-                        </div>
+                        {analyzing ? (
+                            <div className="flex flex-col items-center justify-center py-8">
+                                <div className="relative mb-4">
+                                    <Heart className="h-12 w-12 text-rose-500 animate-pulse" />
+                                    <Sparkles className="h-6 w-6 text-rose-500 absolute -top-2 -right-2 animate-bounce" />
+                                </div>
+                                <h3 className="text-lg font-medium">Consulting Cardiovascular AI...</h3>
+                                <p className="text-sm text-muted-foreground">Analyzing rhythm and recovery patterns for the last {period}.</p>
+                            </div>
+                        ) : insight ? (
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                                <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <Heart className="h-12 w-12 text-rose-500 mb-4 opacity-50" />
+                                <h3 className="text-lg font-medium mb-2">Analyze Cardiovascular Trends</h3>
+                                <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                                    Get deep insights into your resting heart rate and recovery capacity through HRV analysis.
+                                </p>
+                                <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none shadow-lg shadow-rose-500/20 transition-all hover:scale-105 active:scale-95 px-6">
+                                    <Sparkles className="h-4 w-4" />
+                                    Generate Heart Insights
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 

@@ -107,31 +107,6 @@ export function SleepAnalysis() {
                 </div>
             </div>
 
-            {(!insight && !analyzing && !error) && (
-                <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center">
-                    <Moon className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium">Ready for Deep Dive?</h3>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                        We'll analyze your sleep score, heart rate, oxygen levels, and HRV to provide professional insights.
-                    </p>
-                    <Button onClick={() => performAnalysis()} className="gap-2 bg-sky-500 hover:bg-sky-600 border-none shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 px-6">
-                        <Sparkles className="h-4 w-4" />
-                        Start AI Analysis
-                    </Button>
-                </Card>
-            )}
-
-            {analyzing && (
-                <Card className="p-12 flex flex-col items-center justify-center text-center">
-                    <div className="relative mb-4">
-                        <Moon className="h-12 w-12 text-sky-500 animate-pulse" />
-                        <Sparkles className="h-6 w-6 text-sky-500 absolute -top-2 -right-2 animate-bounce" />
-                    </div>
-                    <h3 className="text-lg font-medium">Consulting AI Sleep Specialist...</h3>
-                    <p className="text-sm text-muted-foreground">Aggregating vitals and analyzing patterns over the last {period}.</p>
-                </Card>
-            )}
-
             {error && (
                 <Card className="border-destructive/50 bg-destructive/5 p-6 flex items-start gap-4">
                     <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
@@ -235,30 +210,56 @@ export function SleepAnalysis() {
                     </div>
                 )}
 
-                {insight && !analyzing && (
-                    <Card className="bg-sky-500/5 border-sky-500/20 overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Sparkles className="h-24 w-24 text-sky-600" />
-                        </div>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-sky-500" />
-                                    AI Sleep Insights
-                                </CardTitle>
+                {/* Unified AI Analysis Card */}
+                <Card className="bg-sky-500/5 border-sky-500/20 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Sparkles className="h-24 w-24 text-sky-600" />
+                    </div>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <Sparkles className="h-5 w-5 text-sky-500" />
+                                AI Sleep Insights
+                            </CardTitle>
+                            {insight && (
                                 <div className="px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 text-xs font-semibold capitalize border border-sky-200 dark:border-sky-800/50">
                                     {period === 'week' ? '7-Day Report' : '30-Day Report'}
                                 </div>
-                            </div>
+                            )}
+                        </div>
+                        {insight && (
                             <CardDescription>Comprehensive analysis for the last {period === 'week' ? '7 days' : '30 days'} based on your health metrics</CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                        )}
+                    </CardHeader>
+                    <CardContent>
+                        {analyzing ? (
+                            <div className="flex flex-col items-center justify-center py-8">
+                                <div className="relative mb-4">
+                                    <Moon className="h-12 w-12 text-sky-500 animate-pulse" />
+                                    <Sparkles className="h-6 w-6 text-sky-500 absolute -top-2 -right-2 animate-bounce" />
+                                </div>
+                                <h3 className="text-lg font-medium">Consulting AI Sleep Specialist...</h3>
+                                <p className="text-sm text-muted-foreground">Aggregating vitals and analyzing patterns over the last {period}.</p>
+                            </div>
+                        ) : insight ? (
                             <div className="prose prose-sm dark:prose-invert max-w-none">
                                 <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <Moon className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                                <h3 className="text-lg font-medium mb-2">Ready for Deep Dive?</h3>
+                                <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                                    We'll analyze your sleep score, heart rate, oxygen levels, and HRV to provide professional insights.
+                                </p>
+                                <Button onClick={() => performAnalysis()} className="gap-2 bg-sky-500 hover:bg-sky-600 border-none shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 px-6">
+                                    <Sparkles className="h-4 w-4" />
+                                    Start AI Analysis
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {data?.sleep_metrics?.length > 0 && (
                     <DataChart
