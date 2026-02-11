@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import json
+from typing import Dict, Any
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "mistral" # Or llama3, user can change this
@@ -69,5 +70,46 @@ class AIService:
             return self._get_statistical_summary(df)
         except Exception as e:
             return f"Error analyzing data: {str(e)}"
+
+    def analyze_sleep_advanced(self, data: Dict[str, Any], period_name: str) -> str:
+        """
+        Performs advanced analysis on sleep data including heart rate, SpO2 and HRV.
+        """
+        try:
+            # Construct a detailed prompt
+            prompt = f"""
+            You are a specialized sleep doctor and data analyst. Analyze the following Samsung Health sleep data for the last {period_name}.
+            
+            Metrics:
+            - Sleep Phases: {json.dumps(data.get('stages_summary', {}))}
+            - Avg Heart Rate: {data.get('hr_avg', 'N/A'):.1f} bpm (Min: {data.get('hr_min', 'N/A'):.1f})
+            - Avg SpO2 (Oxygen): {data.get('spo2_avg', 'N/A'):.1f}% (Min: {data.get('spo2_min', 'N/A'):.1f}%)
+            - Avg HRV (Recovery): {data.get('hrv_avg', 'N/A'):.1f} ms
+            
+            Sleep Trend (Last Entries):
+            {json.dumps(data.get('sleep_metrics', [])[-7:])}
+            
+            Please provide:
+            1. A summary of sleep quality.
+            2. Relationship between heart rate/HRV and sleep recovery.
+            3. Evaluation of oxygen saturation (looking for potential issues).
+            4. Concrete recommendations for improvement.
+            
+            Keep it professional and insightful.
+            """
+            
+            payload = {
+                "model": MODEL_NAME,
+                "prompt": prompt,
+                "stream": False
+            }
+            
+            response = requests.post(OLLAMA_URL, json=payload, timeout=10)
+            response.raise_for_status()
+            result = response.json()
+            return result.get('response', 'No response from AI.')
+
+        except Exception as e:
+            return f"Error in advanced sleep analysis: {str(e)}"
 
 ai_service = AIService()

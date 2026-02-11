@@ -59,3 +59,18 @@ async def analyze_file(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+@router.post("/analyze/sleep/advanced")
+async def analyze_sleep_advanced(period: str = Body(..., embed=True)):
+    """Generate advanced sleep insights for a week or month."""
+    try:
+        days = 7 if period == "week" else 30
+        data = data_loader.aggregate_sleep_data(days)
+        
+        if not data:
+            raise HTTPException(status_code=404, detail="No sleep data found for analysis")
+            
+        insight = ai_service.analyze_sleep_advanced(data, period)
+        return {"period": period, "insight": insight, "data_used": data}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

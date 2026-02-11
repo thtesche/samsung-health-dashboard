@@ -41,3 +41,56 @@ class DataLoader:
     def get_all_data_files(self) -> list[str]:
         """Returns a list of all CSV files in the data directory."""
         return [f for f in os.listdir(self.data_dir) if f.endswith('.csv')]
+
+    def get_data_for_period(self, filename: str, days: int = 30) -> pd.DataFrame:
+        """Loads data and filters it for the last N days based on 'create_time' or 'start_time'."""
+        df = self.load_csv(filename)
+        
+        # Identify time column
+        time_col = None
+        for col in ['create_time', 'start_time', 'time']:
+            if col in df.columns:
+                time_col = col
+                break
+        
+        if not time_col:
+            return df # Cannot filter if no time column found
+            
+        # Ensure it's datetime
+        df[time_col] = pd.to_datetime(df[time_col])
+        
+        # Filter for last N days
+        cutoff = pd.Timestamp.now() - pd.Timedelta(days=days)
+        return df[df[time_col] >= cutoff]
+
+    def aggregate_sleep_data(self, days: int = 30) -> Dict[str, Any]:
+        """Aggregates multiple data sources for advanced sleep analysis."""
+        summary = {}
+        try:
+            # Helper to safely load data
+            def safe_fetch(filename):
+                try:
+                    return self.get_data_for_period(filename, days)
+                except:
+                    return pd.DataFrame()
+
+            sleep_df = safe_fetch("sleep.csv")
+            stages_df = safe_fetch("sleep_stage.csv")
+            hr_df = safe_fetch("heart_rate.csv")
+            spo2_df = safe_fetch("oxygen_saturation.csv")
+            vitality_df = safe_fetch("vitality_score.csv")
+            
+            # Create a summary for AI
+            summary = {
+                "sleep_metrics": sleep_df[['start_time', 'sleep_score', 'efficiency', 'physical_recovery', 'mental_recovery']].tail(days).to_dict(orient='records') if not sleep_df.empty else [],
+                "stages_summary": stages_df['stage'].value_counts().to_dict() if not stages_df.empty else {},
+                "hr_avg": hr_df['heart_rate'].mean() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
+                "hr_min": hr_df['heart_rate'].min() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
+                "spo2_avg": spo2_df['spo2'].mean() if not spo2_df.empty and 'spo2' in spo2_df.columns else None,
+                "spo2_min": spo2_df['spo2'].min() if not spo2_df.empty and 'spo2' in spo2_df.columns else None,
+                "hrv_avg": vitality_df['shrv_value'].mean() if not vitality_df.empty and 'shrv_value' in vitality_df.columns else None
+            }
+            return summary
+        except Exception as e:
+            print(f"Aggregation error: {e}")
+            return summary

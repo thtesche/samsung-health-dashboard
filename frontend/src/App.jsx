@@ -4,6 +4,7 @@ import { Activity, Moon, Heart, FileText, ChevronRight, Menu, Brain, LayoutDashb
 import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { DataChart } from './components/DataChart'
+import { SleepAnalysis } from './components/SleepAnalysis'
 import { cn } from './lib/utils'
 
 function App() {
@@ -228,11 +229,14 @@ function App() {
             </div>
           )}
 
-          {/* Fallback for other tabs */}
-          {(activeTab === 'sleep' || activeTab === 'activity') && (
+          {activeTab === 'sleep' && (
+            <SleepAnalysis />
+          )}
+
+          {activeTab === 'activity' && (
             <div className="flex flex-col items-center justify-center h-96 text-muted-foreground">
               <Brain className="h-12 w-12 mb-4 opacity-20" />
-              <p>Advanced analysis for {activeTab} coming soon...</p>
+              <p>Advanced analysis for activity coming soon...</p>
             </div>
           )}
         </div>
