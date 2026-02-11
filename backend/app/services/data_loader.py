@@ -84,7 +84,7 @@ class DataLoader:
             sleep_metrics = []
             if not sleep_df.empty:
                 # Convert timestamps to strings (Date only) for JSON serialization
-                df_copy = sleep_df[['start_time', 'sleep_score', 'efficiency', 'physical_recovery', 'mental_recovery']].tail(days).copy()
+                df_copy = sleep_df[['start_time', 'sleep_score', 'efficiency', 'sleep_duration', 'physical_recovery', 'mental_recovery']].tail(days).copy()
                 df_copy['start_time'] = pd.to_datetime(df_copy['start_time']).dt.strftime('%Y-%m-%d')
                 sleep_metrics = df_copy.to_dict(orient='records')
 
@@ -103,6 +103,7 @@ class DataLoader:
             summary = {
                 "sleep_metrics": sleep_metrics,
                 "stages_summary": stages_summary,
+                "sleep_duration_avg": sleep_df['sleep_duration'].mean() if not sleep_df.empty and 'sleep_duration' in sleep_df.columns else None,
                 "hr_avg": hr_df['heart_rate'].mean() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
                 "hr_min": hr_df['heart_rate'].min() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
                 "spo2_avg": spo2_df['spo2'].mean() if not spo2_df.empty and 'spo2' in spo2_df.columns else None,

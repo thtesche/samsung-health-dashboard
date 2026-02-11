@@ -29,6 +29,13 @@ export function SleepAnalysis() {
         }
     }
 
+    const formatDuration = (minutes) => {
+        if (!minutes) return 'N/A';
+        const hours = Math.floor(minutes / 60);
+        const mins = Math.round(minutes % 60);
+        return `${hours}h ${mins}m`;
+    }
+
     const handlePeriodChange = (newPeriod) => {
         setPeriod(newPeriod)
         performAnalysis(newPeriod)
@@ -123,7 +130,18 @@ export function SleepAnalysis() {
                     </Card>
 
                     {data && (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Clock className="h-3 w-3" /> Total Duration
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{formatDuration(data.sleep_duration_avg)}</div>
+                                    <p className="text-xs text-muted-foreground">Avg per night</p>
+                                </CardContent>
+                            </Card>
                             <Card>
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
