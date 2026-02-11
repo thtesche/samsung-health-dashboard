@@ -71,6 +71,55 @@ class AIService:
         except Exception as e:
             return f"Error analyzing data: {str(e)}"
 
+    def analyze_heart_rate_advanced(self, data: Dict[str, Any], period_name: str) -> str:
+        """
+        Performs advanced analysis on heart rate data including resting HR and HRV.
+        """
+        try:
+            display_period = "7 days" if period_name == "week" else "30 days"
+            metrics = data.get('metrics', {})
+            hr_avg = metrics.get('hr_avg', {})
+            hr_min = metrics.get('hr_min', {})
+            hr_max = metrics.get('hr_max', {})
+            hrv = metrics.get('hrv', {})
+
+            # Construct a detailed prompt
+            prompt = f"""
+            You are a specialized cardiologist and health data analyst. Analyze the following Samsung Health heart rate data for the last {display_period}.
+            
+            Metrics:
+            - Average Heart Rate: {hr_avg.get('value', 0):.1f} bpm (Trend: {hr_avg.get('trend', 0):+.1f}%)
+            - Minimum Heart Rate: {hr_min.get('value', 0):.1f} bpm (Trend: {hr_min.get('trend', 0):+.1f}%)
+            - Maximum Heart Rate: {hr_max.get('value', 0):.1f} bpm (Trend: {hr_max.get('trend', 0):+.1f}%)
+            - Average HRV (Heart Rate Variability): {hrv.get('value', 0):.1f} ms (Trend: {hrv.get('trend', 0):+.1f}%)
+            
+            Daily Average Trend (Last Entries):
+            {json.dumps(data.get('hr_metrics', [])[-10:])}
+            
+            Please provide:
+            1. An assessment of overall cardiovascular health based on these metrics.
+            2. Interpretation of resting heart rate (minimum HR) and regular average.
+            3. Significance of the HRV trend (higher is usually better for recovery).
+            4. Potential red flags or positive signs in the trends.
+            5. Personalized lifestyle recommendations to optimize heart health.
+            
+            Keep it professional, encouraging, and scientifically grounded.
+            """
+            
+            payload = {
+                "model": MODEL_NAME,
+                "prompt": prompt,
+                "stream": False
+            }
+            
+            response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+            response.raise_for_status()
+            result = response.json()
+            return result.get('response', 'No response from AI.')
+
+        except Exception as e:
+            return f"Error in advanced heart rate analysis: {str(e)}"
+
     def analyze_sleep_advanced(self, data: Dict[str, Any], period_name: str) -> str:
         """
         Performs advanced analysis on sleep data including heart rate, SpO2 and HRV.

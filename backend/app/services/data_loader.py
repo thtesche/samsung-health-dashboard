@@ -63,6 +63,67 @@ class DataLoader:
         cutoff = pd.Timestamp.now() - pd.Timedelta(days=days)
         return df[df[time_col] >= cutoff]
 
+    def aggregate_heart_rate_data(self, days: int = 30) -> Dict[str, Any]:
+        """Aggregates heart rate and HRV data for advanced analysis."""
+        summary = {}
+        try:
+            def safe_fetch_range(filename, start_days, end_days):
+                try:
+                    df = self.load_csv(filename)
+                    time_col = next((c for c in ['create_time', 'start_time', 'time'] if c in df.columns), None)
+                    if not time_col: return df
+                    df[time_col] = pd.to_datetime(df[time_col])
+                    now = pd.Timestamp.now()
+                    cutoff_start = now - pd.Timedelta(days=start_days)
+                    cutoff_end = now - pd.Timedelta(days=end_days)
+                    return df[(df[time_col] >= cutoff_start) & (df[time_col] < cutoff_end)]
+                except:
+                    return pd.DataFrame()
+
+            hr_df = safe_fetch_range("heart_rate.csv", days, 0)
+            prev_hr_df = safe_fetch_range("heart_rate.csv", days * 2, days)
+            
+            vitality_df = safe_fetch_range("vitality_score.csv", days, 0)
+            prev_vitality_df = safe_fetch_range("vitality_score.csv", days * 2, days)
+
+            def calc_trend(curr_val, prev_val):
+                if not curr_val or not prev_val or prev_val == 0: return 0
+                return ((curr_val - prev_val) / prev_val) * 100
+
+            hr_metrics = []
+            if not hr_df.empty:
+                # Samples for the chart (grouped by day)
+                df_grouped = hr_df.copy()
+                time_col = next((c for c in ['create_time', 'start_time', 'time'] if c in df_grouped.columns), None)
+                df_grouped['day'] = df_grouped[time_col].dt.strftime('%Y-%m-%d')
+                hr_metrics = df_grouped.groupby('day')['heart_rate'].mean().reset_index().to_dict(orient='records')
+
+            summary = {
+                "hr_metrics": hr_metrics,
+                "metrics": {
+                    "hr_avg": {
+                        "value": hr_df['heart_rate'].mean() if not hr_df.empty else None,
+                        "trend": calc_trend(hr_df['heart_rate'].mean(), prev_hr_df['heart_rate'].mean()) if not hr_df.empty and not prev_hr_df.empty else 0
+                    },
+                    "hr_min": {
+                        "value": hr_df['heart_rate'].min() if not hr_df.empty else None,
+                        "trend": calc_trend(hr_df['heart_rate'].min(), prev_hr_df['heart_rate'].min()) if not hr_df.empty and not prev_hr_df.empty else 0
+                    },
+                    "hr_max": {
+                        "value": hr_df['heart_rate'].max() if not hr_df.empty else None,
+                        "trend": calc_trend(hr_df['heart_rate'].max(), prev_hr_df['heart_rate'].max()) if not hr_df.empty and not prev_hr_df.empty else 0
+                    },
+                    "hrv": {
+                        "value": vitality_df['shrv_value'].mean() if not vitality_df.empty else None,
+                        "trend": calc_trend(vitality_df['shrv_value'].mean(), prev_vitality_df['shrv_value'].mean()) if not vitality_df.empty and not prev_vitality_df.empty else 0
+                    }
+                }
+            }
+            return summary
+        except Exception as e:
+            print(f"Heart rate aggregation error: {e}")
+            return summary
+
     def aggregate_sleep_data(self, days: int = 30) -> Dict[str, Any]:
         """Aggregates multiple data sources for advanced sleep analysis."""
         summary = {}

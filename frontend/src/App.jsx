@@ -5,6 +5,7 @@ import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { DataChart } from './components/DataChart'
 import { SleepAnalysis } from './components/SleepAnalysis'
+import { HeartRateAnalysis } from './components/HeartRateAnalysis'
 import { cn } from './lib/utils'
 
 function App() {
@@ -65,7 +66,7 @@ function App() {
   }
 
   const handleGenerateInsight = async () => {
-    if (!activeTab || activeTab === 'overview' || activeTab === 'sleep' || activeTab === 'activity' || activeTab === 'vitals') return;
+    if (!activeTab || activeTab === 'overview' || activeTab === 'sleep' || activeTab === 'activity' || activeTab === 'heart_rate') return;
 
     setAnalyzing(true)
     setInsight(null)
@@ -121,6 +122,12 @@ function App() {
             onClick={() => { setActiveTab('sleep'); setInsight(null); setSelectedFileData(null); }}
           />
           <SidebarItem
+            icon={Heart}
+            label="Heart Rate"
+            id="heart_rate"
+            onClick={() => { setActiveTab('heart_rate'); setInsight(null); setSelectedFileData(null); }}
+          />
+          <SidebarItem
             icon={Activity}
             label="Activity"
             id="activity"
@@ -155,7 +162,7 @@ function App() {
             <h1 className="text-xl font-semibold capitalize">{activeTab.replace('.csv', '')}</h1>
           </div>
           <div className="flex items-center gap-2">
-            {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && (
+            {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && activeTab !== 'heart_rate' && (
               <Button
                 onClick={handleGenerateInsight}
                 disabled={analyzing}
@@ -205,7 +212,7 @@ function App() {
           )}
 
           {/* Dynamic Data Chart for selected file */}
-          {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && (
+          {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && activeTab !== 'heart_rate' && (
             <div className="space-y-6">
               {insight && (
                 <Card className="bg-primary/5 border-primary/20">
@@ -248,6 +255,10 @@ function App() {
 
           {activeTab === 'sleep' && (
             <SleepAnalysis />
+          )}
+
+          {activeTab === 'heart_rate' && (
+            <HeartRateAnalysis />
           )}
 
           {activeTab === 'activity' && (

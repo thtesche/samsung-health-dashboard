@@ -1,0 +1,220 @@
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { Sparkles, Heart, RefreshCcw, AlertCircle, TrendingUp, TrendingDown, Activity, Zap } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { Button } from './ui/button'
+import { DataChart } from './DataChart'
+import { cn } from '../lib/utils'
+
+export function HeartRateAnalysis() {
+    const [period, setPeriod] = useState('week')
+    const [analyzing, setAnalyzing] = useState(false)
+    const [insight, setInsight] = useState(null)
+    const [data, setData] = useState(null)
+    const [error, setError] = useState(null)
+
+    const performAnalysis = async (p = period) => {
+        setAnalyzing(true)
+        setError(null)
+        setInsight(null)
+        try {
+            const response = await axios.post('http://localhost:8000/api/analyze/heart_rate/advanced', { period: p })
+            setInsight(response.data.insight)
+            setData(response.data.data_used)
+        } catch (err) {
+            console.error("Heart rate analysis failed:", err)
+            setError("Failed to generate heart rate analysis. Ensure your 'heart_rate.csv' and 'vitality_score.csv' files are in the 'cleaned' folder and Ollama is running.")
+        } finally {
+            setAnalyzing(false)
+        }
+    }
+
+    const handlePeriodChange = (newPeriod) => {
+        setPeriod(newPeriod)
+        if (insight) performAnalysis(newPeriod)
+    }
+
+    const TrendBadge = ({ trend, invert = false }) => {
+        if (trend === 0 || trend === null) return null;
+        // For HR, lower is often better (resting HR), but for HRV higher is better.
+        const isActuallyPositive = invert ? trend < 0 : trend > 0;
+        const colorClass = isActuallyPositive ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500";
+
+        return (
+            <div className={cn(
+                "flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto",
+                colorClass
+            )}>
+                {trend > 0 ? <TrendingUp className="h-2 w-2 mr-1" /> : <TrendingDown className="h-2 w-2 mr-1" />}
+                {Math.abs(trend).toFixed(1)}%
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-bold tracking-tight">Heart Rate Analysis</h2>
+                    <p className="text-muted-foreground">Detailed cardiovascular overview, resting heart rate, and variability metrics.</p>
+                </div>
+                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
+                    <Button
+                        variant={period === 'week' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => handlePeriodChange('week')}
+                        className={cn(period === 'week' && "shadow-sm")}
+                    >
+                        7 Days
+                    </Button>
+                    <Button
+                        variant={period === 'month' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => handlePeriodChange('month')}
+                        className={cn(period === 'month' && "shadow-sm")}
+                    >
+                        30 Days
+                    </Button>
+                </div>
+            </div>
+
+            {!insight && !analyzing && !error && (
+                <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center">
+                    <Heart className="h-12 w-12 text-rose-500 mb-4 opacity-50" />
+                    <h3 className="text-lg font-medium">Analyze Cardiovascular Trends</h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                        Get deep insights into your resting heart rate and recovery capacity through HRV analysis.
+                    </p>
+                    <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none">
+                        <Sparkles className="h-4 w-4" />
+                        Generate Heart Insights
+                    </Button>
+                </Card>
+            )}
+
+            {analyzing && (
+                <Card className="p-12 flex flex-col items-center justify-center text-center">
+                    <div className="relative mb-4">
+                        <Heart className="h-12 w-12 text-rose-500 animate-pulse" />
+                        <Sparkles className="h-6 w-6 text-rose-500 absolute -top-2 -right-2 animate-bounce" />
+                    </div>
+                    <h3 className="text-lg font-medium">Consulting Cardiovascular AI...</h3>
+                    <p className="text-sm text-muted-foreground">Analyzing rhythm and recovery patterns for the last {period}.</p>
+                </Card>
+            )}
+
+            {error && (
+                <Card className="border-destructive/50 bg-destructive/5 p-6 flex items-start gap-4">
+                    <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                    <div className="space-y-1">
+                        <h3 className="font-semibold text-destructive">Analysis Error</h3>
+                        <p className="text-sm text-destructive/80">{error}</p>
+                        <Button variant="outline" size="sm" onClick={() => performAnalysis()} className="mt-2">Try Again</Button>
+                    </div>
+                </Card>
+            )}
+
+            {insight && (
+                <div className="grid gap-6">
+                    <Card className="bg-rose-50/50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/50 overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Heart className="h-24 w-24 text-rose-600" />
+                        </div>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-rose-600" />
+                                    AI Heart Analysis
+                                </CardTitle>
+                                <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
+                                    {period === 'week' ? '7-Day Report' : '30-Day Report'}
+                                </div>
+                            </div>
+                            <CardDescription>Advanced cardiovascular assessment and recovery metrics</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                                <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {data?.metrics && (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Activity className="h-3 w-3" /> Avg HR
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr_avg.trend} invert />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_avg.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Beats per minute</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <TrendingDown className="h-3 w-3" /> Min HR
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr_min.trend} invert />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_min.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Resting HR</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <TrendingUp className="h-3 w-3" /> Max HR
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr_max.trend} />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_max.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Peak recorded</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Zap className="h-3 w-3" /> HRV
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hrv.trend} />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hrv.value?.toFixed(1) || 'N/A'} <span className="text-xs font-normal text-muted-foreground">ms</span></div>
+                                    <p className="text-xs text-muted-foreground">Recovery capacity</p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
+                    {data?.hr_metrics?.length > 0 && (
+                        <DataChart
+                            title="Daily Average Heart Rate"
+                            description={`Trends over the last ${period}`}
+                            data={data.hr_metrics}
+                            dataKey="heart_rate"
+                            category="day"
+                            type="area"
+                        />
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}

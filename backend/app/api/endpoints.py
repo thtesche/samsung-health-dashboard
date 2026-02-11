@@ -74,3 +74,18 @@ async def analyze_sleep_advanced(period: str = Body(..., embed=True)):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+@router.post("/analyze/heart_rate/advanced")
+async def analyze_heart_rate_advanced(period: str = Body(..., embed=True)):
+    """Generate advanced heart rate insights for a week or month."""
+    try:
+        days = 7 if period == "week" else 30
+        data = data_loader.aggregate_heart_rate_data(days)
+        
+        if not data or not data.get('metrics'):
+            raise HTTPException(status_code=404, detail="No heart rate data found for analysis")
+            
+        insight = ai_service.analyze_heart_rate_advanced(data, period)
+        return {"period": period, "insight": insight, "data_used": data}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
