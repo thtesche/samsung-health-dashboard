@@ -57,7 +57,7 @@ class AIService:
                 "stream": False
             }
             
-            response = requests.post(OLLAMA_URL, json=payload, timeout=5)
+            response = requests.post(OLLAMA_URL, json=payload, timeout=30)
             response.raise_for_status()
             result = response.json()
             return result.get('response', 'No response from AI.')
@@ -104,7 +104,7 @@ class AIService:
                 "stream": False
             }
             
-            response = requests.post(OLLAMA_URL, json=payload, timeout=10)
+            response = requests.post(OLLAMA_URL, json=payload, timeout=60)
             response.raise_for_status()
             result = response.json()
             return result.get('response', 'No response from AI.')

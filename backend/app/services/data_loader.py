@@ -81,8 +81,15 @@ class DataLoader:
             vitality_df = safe_fetch("vitality_score.csv")
             
             # Create a summary for AI
+            sleep_metrics = []
+            if not sleep_df.empty:
+                # Convert timestamps to strings for JSON serialization
+                df_copy = sleep_df[['start_time', 'sleep_score', 'efficiency', 'physical_recovery', 'mental_recovery']].tail(days).copy()
+                df_copy['start_time'] = df_copy['start_time'].astype(str)
+                sleep_metrics = df_copy.to_dict(orient='records')
+
             summary = {
-                "sleep_metrics": sleep_df[['start_time', 'sleep_score', 'efficiency', 'physical_recovery', 'mental_recovery']].tail(days).to_dict(orient='records') if not sleep_df.empty else [],
+                "sleep_metrics": sleep_metrics,
                 "stages_summary": stages_df['stage'].value_counts().to_dict() if not stages_df.empty else {},
                 "hr_avg": hr_df['heart_rate'].mean() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
                 "hr_min": hr_df['heart_rate'].min() if not hr_df.empty and 'heart_rate' in hr_df.columns else None,
