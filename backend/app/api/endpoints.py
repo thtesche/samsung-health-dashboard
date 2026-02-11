@@ -60,8 +60,11 @@ async def analyze_file(filename: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 @router.post("/analyze/sleep/advanced")
-async def analyze_sleep_advanced(period: str = Body(..., embed=True)):
-    """Generate advanced sleep insights for a week or month."""
+async def analyze_sleep_advanced(
+    period: str = Body(..., embed=True),
+    skip_analysis: bool = Body(False, embed=True)
+):
+    """Generate advanced sleep insights or just fetch data."""
     try:
         days = 7 if period == "week" else 30
         data = data_loader.aggregate_sleep_data(days)
@@ -69,14 +72,21 @@ async def analyze_sleep_advanced(period: str = Body(..., embed=True)):
         if not data:
             raise HTTPException(status_code=404, detail="No sleep data found for analysis")
             
+        if skip_analysis:
+            return {"period": period, "insight": None, "data_used": data}
+            
         insight = ai_service.analyze_sleep_advanced(data, period)
         return {"period": period, "insight": insight, "data_used": data}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/analyze/heart_rate/advanced")
-async def analyze_heart_rate_advanced(period: str = Body(..., embed=True)):
-    """Generate advanced heart rate insights for varying periods."""
+async def analyze_heart_rate_advanced(
+    period: str = Body(..., embed=True),
+    skip_analysis: bool = Body(False, embed=True)
+):
+    """Generate advanced heart rate insights or just fetch data."""
     try:
         period_map = {"week": 7, "month": 30, "90d": 90, "180d": 180}
         days = period_map.get(period, 30)
@@ -84,6 +94,9 @@ async def analyze_heart_rate_advanced(period: str = Body(..., embed=True)):
         
         if not data or not data.get('metrics'):
             raise HTTPException(status_code=404, detail="No heart rate data found for analysis")
+            
+        if skip_analysis:
+            return {"period": period, "insight": None, "data_used": data}
             
         insight = ai_service.analyze_heart_rate_advanced(data, period)
         return {"period": period, "insight": insight, "data_used": data}

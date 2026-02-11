@@ -58,12 +58,12 @@ export function HeartRateAnalysis() {
                     <h2 className="text-2xl font-bold tracking-tight">Heart Rate Analysis</h2>
                     <p className="text-muted-foreground">Detailed cardiovascular overview, resting heart rate, and variability metrics.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
+                <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm p-1 rounded-lg border shadow-sm">
                     <Button
                         variant={period === 'week' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handlePeriodChange('week')}
-                        className={cn(period === 'week' && "shadow-sm")}
+                        className={cn(period === 'week' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
                     >
                         7 Days
                     </Button>
@@ -71,7 +71,7 @@ export function HeartRateAnalysis() {
                         variant={period === 'month' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handlePeriodChange('month')}
-                        className={cn(period === 'month' && "shadow-sm")}
+                        className={cn(period === 'month' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
                     >
                         30 Days
                     </Button>
@@ -79,7 +79,7 @@ export function HeartRateAnalysis() {
                         variant={period === '90d' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handlePeriodChange('90d')}
-                        className={cn(period === '90d' && "shadow-sm")}
+                        className={cn(period === '90d' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
                     >
                         90 Days
                     </Button>
@@ -87,7 +87,7 @@ export function HeartRateAnalysis() {
                         variant={period === '180d' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handlePeriodChange('180d')}
-                        className={cn(period === '180d' && "shadow-sm")}
+                        className={cn(period === '180d' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
                     >
                         180 Days
                     </Button>
@@ -101,7 +101,7 @@ export function HeartRateAnalysis() {
                     <p className="text-sm text-muted-foreground mb-6 max-w-sm">
                         Get deep insights into your resting heart rate and recovery capacity through HRV analysis.
                     </p>
-                    <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none">
+                    <Button onClick={() => performAnalysis()} className="gap-2 bg-rose-500 hover:bg-rose-600 border-none shadow-lg shadow-rose-500/20 transition-all hover:scale-105 active:scale-95 px-6">
                         <Sparkles className="h-4 w-4" />
                         Generate Heart Insights
                     </Button>
@@ -131,7 +131,85 @@ export function HeartRateAnalysis() {
             )}
 
             {insight && (
-                <div className="grid gap-6">
+                <div className="flex flex-col gap-6">
+                    {data?.metrics && (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <Card className="flex flex-col h-full">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Activity className="h-3 w-3" /> Avg HR
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr_avg.trend} invert />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_avg.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Beats per minute</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="flex flex-col h-full">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Heart className="h-3 w-3" /> Avg sleeping HR
+                                        </CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_sleeping.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">During sleep sessions</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="flex flex-col h-full">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <TrendingDown className="h-3 w-3" /> Min HR
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr_min.trend} invert />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_min.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Resting HR</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="flex flex-col h-full">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <TrendingUp className="h-3 w-3" /> Max HR
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hr_max.trend} />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hr_max.value?.toFixed(1) || 'N/A'}</div>
+                                    <p className="text-xs text-muted-foreground">Peak recorded</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="flex flex-col h-full">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center">
+                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                            <Zap className="h-3 w-3" /> HRV
+                                        </CardTitle>
+                                        <TrendBadge trend={data.metrics.hrv.trend} />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{data.metrics.hrv.value?.toFixed(1) || 'N/A'} <span className="text-xs font-normal text-muted-foreground">ms</span></div>
+                                    <p className="text-xs text-muted-foreground">Recovery capacity</p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
                     <Card className="bg-rose-50/50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/50 overflow-hidden relative">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Heart className="h-24 w-24 text-rose-600" />
@@ -156,84 +234,6 @@ export function HeartRateAnalysis() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    {data?.metrics && (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <Activity className="h-3 w-3" /> Avg HR
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hr_avg.trend} invert />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_avg.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Beats per minute</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <Heart className="h-3 w-3" /> Avg sleeping HR
-                                        </CardTitle>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_sleeping.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">During sleep sessions</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <TrendingDown className="h-3 w-3" /> Min HR
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hr_min.trend} invert />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_min.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Resting HR</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <TrendingUp className="h-3 w-3" /> Max HR
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hr_max.trend} />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hr_max.value?.toFixed(1) || 'N/A'}</div>
-                                    <p className="text-xs text-muted-foreground">Peak recorded</p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center">
-                                        <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
-                                            <Zap className="h-3 w-3" /> HRV
-                                        </CardTitle>
-                                        <TrendBadge trend={data.metrics.hrv.trend} />
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{data.metrics.hrv.value?.toFixed(1) || 'N/A'} <span className="text-xs font-normal text-muted-foreground">ms</span></div>
-                                    <p className="text-xs text-muted-foreground">Recovery capacity</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
 
                     {data?.hr_metrics?.length > 0 && (
                         <DataChart
