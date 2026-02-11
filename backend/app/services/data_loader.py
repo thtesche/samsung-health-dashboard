@@ -80,6 +80,21 @@ class DataLoader:
                 except:
                     return pd.DataFrame()
 
+            import numpy as np
+            def add_polynomial_trend(data_list, value_key, degree=5):
+                if not data_list or len(data_list) < degree + 1: return data_list
+                try:
+                    y = np.array([d[value_key] for d in data_list])
+                    x = np.arange(len(y))
+                    coeffs = np.polyfit(x, y, degree)
+                    p = np.poly1d(coeffs)
+                    trend_vals = p(x)
+                    for i, d in enumerate(data_list):
+                        d['trend_line'] = trend_vals[i]
+                except:
+                    pass
+                return data_list
+
             hr_df = safe_fetch_range("heart_rate.csv", days, 0)
             prev_hr_df = safe_fetch_range("heart_rate.csv", days * 2, days)
             
@@ -99,6 +114,7 @@ class DataLoader:
                 time_col = next((c for c in ['create_time', 'start_time', 'time'] if c in df_grouped.columns), None)
                 df_grouped['day'] = df_grouped[time_col].dt.strftime('%Y-%m-%d')
                 hr_metrics = df_grouped.groupby('day')['heart_rate'].mean().reset_index().to_dict(orient='records')
+                hr_metrics = add_polynomial_trend(hr_metrics, 'heart_rate')
 
             # Sleeping HR Calculation
             sleeping_hr_metrics = []
@@ -124,6 +140,7 @@ class DataLoader:
                 sleeping_hr_metrics = session_averages
                 if session_averages:
                     sleeping_hr_avg = sum(s['sleeping_heart_rate'] for s in session_averages) / len(session_averages)
+                    sleeping_hr_metrics = add_polynomial_trend(sleeping_hr_metrics, 'sleeping_heart_rate')
 
             summary = {
                 "hr_metrics": hr_metrics,

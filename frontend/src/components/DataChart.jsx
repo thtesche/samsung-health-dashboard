@@ -60,6 +60,22 @@ export function DataChart({ title, description, data, type = "bar", dataKey, cat
                     backgroundColor: 'hsl(var(--card))',
                     color: 'hsl(var(--foreground))'
                 }}
+                formatter={(value, name) => [
+                    typeof value === 'number' ? value.toFixed(1) : value,
+                    name === 'trend_line' ? 'Trend (Poly 5°)' : title
+                ]}
+            />
+        );
+
+        const trendLine = data.some(d => d.trend_line !== undefined) && (
+            <Line
+                type="monotone"
+                dataKey="trend_line"
+                stroke="hsl(var(--destructive))"
+                strokeWidth={2}
+                dot={false}
+                strokeDasharray="5 5"
+                name="trend_line"
             />
         );
 
@@ -71,6 +87,7 @@ export function DataChart({ title, description, data, type = "bar", dataKey, cat
                     {yAxis}
                     {tooltip}
                     <Bar dataKey={dataKey} fill="currentColor" radius={[4, 4, 0, 0]} className="fill-primary" />
+                    {trendLine}
                 </BarChart>
             );
         }
@@ -89,6 +106,7 @@ export function DataChart({ title, description, data, type = "bar", dataKey, cat
                     {yAxis}
                     {tooltip}
                     <Area type="monotone" dataKey={dataKey} stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" />
+                    {trendLine}
                 </AreaChart>
             );
         }
@@ -100,6 +118,7 @@ export function DataChart({ title, description, data, type = "bar", dataKey, cat
                 {yAxis}
                 {tooltip}
                 <Line type="monotone" dataKey={dataKey} stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))" }} activeDot={{ r: 6 }} />
+                {trendLine}
             </LineChart>
         );
     };
