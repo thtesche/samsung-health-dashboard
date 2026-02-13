@@ -74,3 +74,24 @@
     color: hsl(var(--foreground));
   }
 }
+
+/* Custom Typography Overrides for better readability */
+.prose ul, 
+.prose ol {
+  margin-top: 1.5em !important;
+  margin-bottom: 1.5em !important;
+}
+
+.prose li {
+  margin-top: 0.5em !important;
+  margin-bottom: 0.5em !important;
+}
+
+.prose p {
+  margin-bottom: 1.25em !important;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  margin-top: 2em !important;
+  margin-bottom: 1em !important;
+}
