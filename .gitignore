@@ -16,5 +16,4 @@ backend/__pycache__/
 /.idea/copilot.data.migration.ask2agent.xml
 /.idea/misc.xml
 /.idea/modules.xml
-/package-lock.json
-/package.json
+
