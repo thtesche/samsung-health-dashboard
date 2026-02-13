@@ -107,28 +107,30 @@ export function SleepAnalysis() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight">Advanced Sleep Analysis</h2>
-                    <p className="text-muted-foreground">Comprehensive review of sleep cycles, vitals, and recovery patterns.</p>
-                </div>
-                <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm p-1 rounded-lg border shadow-sm">
-                    <Button
-                        variant={period === 'week' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => handlePeriodChange('week')}
-                        className={cn(period === 'week' ? "shadow-sm bg-sky-500 hover:bg-sky-600 text-white" : "hover:bg-sky-500/10 hover:text-sky-600")}
-                    >
-                        Last 7 Days
-                    </Button>
-                    <Button
-                        variant={period === 'month' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => handlePeriodChange('month')}
-                        className={cn(period === 'month' ? "shadow-sm bg-sky-500 hover:bg-sky-600 text-white" : "hover:bg-sky-500/10 hover:text-sky-600")}
-                    >
-                        Last 30 Days
-                    </Button>
+            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 -mx-6 px-6 py-4 border-b -mt-6 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold tracking-tight">Advanced Sleep Analysis</h2>
+                        <p className="text-sm text-muted-foreground">Comprehensive review of sleep cycles, vitals, and recovery patterns.</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm p-1 rounded-lg border shadow-sm self-start md:self-center">
+                        <Button
+                            variant={period === 'week' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handlePeriodChange('week')}
+                            className={cn(period === 'week' ? "shadow-sm bg-sky-500 hover:bg-sky-600 text-white" : "hover:bg-sky-500/10 hover:text-sky-600")}
+                        >
+                            Last 7 Days
+                        </Button>
+                        <Button
+                            variant={period === 'month' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handlePeriodChange('month')}
+                            className={cn(period === 'month' ? "shadow-sm bg-sky-500 hover:bg-sky-600 text-white" : "hover:bg-sky-500/10 hover:text-sky-600")}
+                        >
+                            Last 30 Days
+                        </Button>
+                    </div>
                 </div>
             </div>
 

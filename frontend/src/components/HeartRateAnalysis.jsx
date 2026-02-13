@@ -95,44 +95,46 @@ export function HeartRateAnalysis() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight">Heart Rate Analysis</h2>
-                    <p className="text-muted-foreground">Detailed cardiovascular overview, resting heart rate, and variability metrics.</p>
-                </div>
-                <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm p-1 rounded-lg border shadow-sm">
-                    <Button
-                        variant={period === 'week' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => handlePeriodChange('week')}
-                        className={cn(period === 'week' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
-                    >
-                        7 Days
-                    </Button>
-                    <Button
-                        variant={period === 'month' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => handlePeriodChange('month')}
-                        className={cn(period === 'month' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
-                    >
-                        30 Days
-                    </Button>
-                    <Button
-                        variant={period === '90d' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => handlePeriodChange('90d')}
-                        className={cn(period === '90d' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
-                    >
-                        90 Days
-                    </Button>
-                    <Button
-                        variant={period === '180d' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => handlePeriodChange('180d')}
-                        className={cn(period === '180d' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
-                    >
-                        180 Days
-                    </Button>
+            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 -mx-6 px-6 py-4 border-b -mt-6 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold tracking-tight">Heart Rate Analysis</h2>
+                        <p className="text-sm text-muted-foreground">Detailed cardiovascular overview, resting heart rate, and variability metrics.</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm p-1 rounded-lg border shadow-sm self-start md:self-center">
+                        <Button
+                            variant={period === 'week' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handlePeriodChange('week')}
+                            className={cn(period === 'week' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
+                        >
+                            7 Days
+                        </Button>
+                        <Button
+                            variant={period === 'month' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handlePeriodChange('month')}
+                            className={cn(period === 'month' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
+                        >
+                            30 Days
+                        </Button>
+                        <Button
+                            variant={period === '90d' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handlePeriodChange('90d')}
+                            className={cn(period === '90d' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
+                        >
+                            90 Days
+                        </Button>
+                        <Button
+                            variant={period === '180d' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handlePeriodChange('180d')}
+                            className={cn(period === '180d' ? "shadow-sm bg-rose-500 hover:bg-rose-600 text-white" : "hover:bg-rose-500/10 hover:text-rose-600")}
+                        >
+                            180 Days
+                        </Button>
+                    </div>
                 </div>
             </div>
 
