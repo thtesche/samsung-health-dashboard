@@ -17,7 +17,6 @@ export function HeartRateAnalysis() {
 
     const {
         processStream,
-        streamingContent,
         thoughts,
         finalResponse,
         isThinking,
