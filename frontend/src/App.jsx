@@ -3,7 +3,7 @@ import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
-import { Activity, Moon, Heart, FileText, ChevronRight, Menu, Brain, LayoutDashboard, Sparkles } from 'lucide-react'
+import { Activity, Moon, Heart, FileText, ChevronRight, Menu, Brain, LayoutDashboard, Sparkles, Server, Cpu } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { DataChart } from './components/DataChart'
@@ -20,6 +20,7 @@ function App() {
   const [chartConfig, setChartConfig] = useState(null)
   const [insight, setInsight] = useState(null)
   const [analyzing, setAnalyzing] = useState(false)
+  const [aiStatus, setAiStatus] = useState({ status: 'checking', model: '' })
 
   useEffect(() => {
     // Fetch available data files
@@ -34,6 +35,17 @@ function App() {
       }
     }
     fetchDataFiles()
+
+    // Fetch AI Status
+    const fetchAiStatus = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/ai/status')
+        setAiStatus(response.data)
+      } catch (error) {
+        setAiStatus({ status: 'error', model: 'N/A' })
+      }
+    }
+    fetchAiStatus()
   }, [])
 
   const handleFileClick = async (filename) => {
@@ -153,6 +165,36 @@ function App() {
             ))
           )}
         </nav>
+
+        {/* Sidebar Footer - AI Status */}
+        <div className="mt-auto p-4 border-t">
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 transition-all cursor-help group"
+            title={`Model: ${aiStatus.model}`}
+          >
+            <div className="relative">
+              <Cpu className={cn(
+                "h-5 w-5 transition-colors",
+                aiStatus.status === 'connected' ? "text-emerald-500" : "text-muted-foreground"
+              )} />
+              <div className={cn(
+                "absolute -top-1 -right-1 h-2 w-2 rounded-full border-2 border-card",
+                aiStatus.status === 'connected' ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
+              )} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium leading-none">AI Connection</p>
+              <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                {aiStatus.status === 'connected' ? "Connected to Ollama" : "Ollama Offline"}
+              </p>
+            </div>
+            {/* Tooltip on hover */}
+            <div className="absolute left-full ml-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-lg border shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+              <div className="font-semibold mb-1">Current Model</div>
+              <div className="font-mono text-primary">{aiStatus.model}</div>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}

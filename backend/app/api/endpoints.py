@@ -92,6 +92,11 @@ async def analyze_sleep_advanced(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/ai/status")
+async def get_ai_status():
+    """Check AI (Ollama) connection status and current model."""
+    return ai_service.check_ollama_status()
+
 @router.post("/analyze/heart_rate/advanced")
 async def analyze_heart_rate_advanced(
     period: str = Body(..., embed=True),

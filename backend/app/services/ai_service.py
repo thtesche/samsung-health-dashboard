@@ -8,7 +8,38 @@ MODEL_NAME = "deepseek-r1:14b" # mistral, llama3, qwq user can change this
 
 class AIService:
     def __init__(self):
-        pass
+        self.ollama_url = OLLAMA_URL
+        self.model_name = MODEL_NAME
+
+    def check_ollama_status(self) -> Dict[str, Any]:
+        """Check if Ollama is accessible and which models are available."""
+        try:
+            # Check connection to base URL (usually returns "Ollama is running")
+            base_url = self.ollama_url.replace("/api/generate", "")
+            response = requests.get(base_url, timeout=5)
+            is_running = response.status_code == 200
+            
+            # Optionally check if the specific model is pulled
+            tags_response = requests.get(f"{base_url}/api/tags", timeout=5)
+            models = []
+            model_exists = False
+            if tags_response.status_code == 200:
+                tags_data = tags_response.json()
+                models = [m['name'] for m in tags_data.get('models', [])]
+                model_exists = self.model_name in models or any(self.model_name in m for m in models)
+
+            return {
+                "status": "connected" if is_running else "disconnected",
+                "model": self.model_name,
+                "model_exists": model_exists,
+                "available_models": models
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e),
+                "model": self.model_name
+            }
 
     def _get_statistical_summary(self, df: pd.DataFrame) -> str:
         """Generates a text summary based on statistics."""
