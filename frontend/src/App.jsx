@@ -154,26 +154,6 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto h-screen">
-        <header className="h-16 border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 px-6 flex items-center justify-between sticky top-0 z-40">
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && activeTab !== 'heart_rate' && (
-              <Button
-                onClick={handleGenerateInsight}
-                disabled={analyzing}
-                className="gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                {analyzing ? "Analyzing..." : "Generate AI Insights"}
-              </Button>
-            )}
-          </div>
-        </header>
-
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
           {activeTab === 'overview' && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -213,6 +193,18 @@ function App() {
           {/* Dynamic Data Chart for selected file */}
           {activeTab !== 'overview' && activeTab !== 'sleep' && activeTab !== 'activity' && activeTab !== 'heart_rate' && (
             <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold tracking-tight">{activeTab.replace('.csv', '').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h2>
+                <Button
+                  onClick={handleGenerateInsight}
+                  disabled={analyzing}
+                  className="gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {analyzing ? "Analyzing..." : "Generate AI Insights"}
+                </Button>
+              </div>
+
               {insight && (
                 <Card className="bg-primary/5 border-primary/20">
                   <CardHeader>
