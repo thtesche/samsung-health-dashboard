@@ -30,7 +30,7 @@ class AIService:
                 
         return summary
 
-    def analyze_data(self, filename: str, data: list) -> str:
+    def analyze_data(self, filename: str, data: list, stream: bool = False):
         """
         Analyzes the provided data snippet using Local AI or Statistics.
         """
@@ -55,13 +55,26 @@ class AIService:
             payload = {
                 "model": MODEL_NAME,
                 "prompt": prompt,
-                "stream": False
             }
-            
-            response = requests.post(OLLAMA_URL, json=payload, timeout=300)
-            response.raise_for_status()
-            result = response.json()
-            return result.get('response', 'No response from AI.')
+
+            if stream:
+                payload["stream"] = True
+                response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=300)
+                response.raise_for_status()
+                for line in response.iter_lines():
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        try:
+                            json_line = json.loads(decoded_line)
+                            if 'response' in json_line:
+                                yield json_line['response']
+                        except:
+                            pass
+            else:
+                response = requests.post(OLLAMA_URL, json=payload, timeout=300)
+                response.raise_for_status()
+                result = response.json()
+                return result.get('response', 'No response from AI.')
 
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
@@ -72,7 +85,7 @@ class AIService:
         except Exception as e:
             return f"Error analyzing data: {str(e)}"
 
-    def analyze_heart_rate_advanced(self, data: Dict[str, Any], period_name: str) -> str:
+    def analyze_heart_rate_advanced(self, data: Dict[str, Any], period_name: str, stream: bool = False):
         """
         Performs advanced analysis on heart rate data including resting HR and HRV.
         """
@@ -125,18 +138,31 @@ class AIService:
             payload = {
                 "model": MODEL_NAME,
                 "prompt": prompt,
-                "stream": False
             }
-            
-            response = requests.post(OLLAMA_URL, json=payload, timeout=600)
-            response.raise_for_status()
-            result = response.json()
-            return result.get('response', 'No response from AI.')
+
+            if stream:
+                payload["stream"] = True
+                response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
+                response.raise_for_status()
+                for line in response.iter_lines():
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        try:
+                            json_line = json.loads(decoded_line)
+                            if 'response' in json_line:
+                                yield json_line['response']
+                        except:
+                            pass
+            else:
+                response = requests.post(OLLAMA_URL, json=payload, timeout=600)
+                response.raise_for_status()
+                result = response.json()
+                return result.get('response', 'No response from AI.')
 
         except Exception as e:
             return f"Error in advanced heart rate analysis: {str(e)}"
 
-    def analyze_sleep_advanced(self, data: Dict[str, Any], period_name: str) -> str:
+    def analyze_sleep_advanced(self, data: Dict[str, Any], period_name: str, stream: bool = False):
         """
         Performs advanced analysis on sleep data including heart rate, SpO2 and HRV.
         """
@@ -188,13 +214,26 @@ class AIService:
             payload = {
                 "model": MODEL_NAME,
                 "prompt": prompt,
-                "stream": False
             }
-            
-            response = requests.post(OLLAMA_URL, json=payload, timeout=600)
-            response.raise_for_status()
-            result = response.json()
-            return result.get('response', 'No response from AI.')
+
+            if stream:
+                payload["stream"] = True
+                response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
+                response.raise_for_status()
+                for line in response.iter_lines():
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        try:
+                            json_line = json.loads(decoded_line)
+                            if 'response' in json_line:
+                                yield json_line['response']
+                        except:
+                            pass
+            else:
+                response = requests.post(OLLAMA_URL, json=payload, timeout=600)
+                response.raise_for_status()
+                result = response.json()
+                return result.get('response', 'No response from AI.')
 
         except Exception as e:
             return f"Error in advanced sleep analysis: {str(e)}"

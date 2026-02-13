@@ -7,17 +7,30 @@ import { Button } from './ui/button'
 import { DataChart } from './DataChart'
 import { cn } from '../lib/utils'
 
+import { useAIStream } from '../lib/useAIStream'
+
 export function SleepAnalysis() {
     const [period, setPeriod] = useState('week')
-    const [analyzing, setAnalyzing] = useState(false)
-    const [insight, setInsight] = useState(null)
     const [data, setData] = useState(null)
     const [loadingData, setLoadingData] = useState(false)
-    const [error, setError] = useState(null)
+    const [localError, setLocalError] = useState(null)
+
+    const {
+        processStream,
+        streamingContent,
+        thoughts,
+        finalResponse,
+        isThinking,
+        isStreaming,
+        error: streamError,
+        resetStream
+    } = useAIStream()
+
+    const error = localError || streamError;
 
     const fetchDataOnly = async (p = period) => {
         setLoadingData(true)
-        setError(null)
+        setLocalError(null)
         try {
             const response = await axios.post('http://localhost:8000/api/analyze/sleep/advanced', {
                 period: p,
@@ -26,25 +39,30 @@ export function SleepAnalysis() {
             setData(response.data.data_used)
         } catch (err) {
             console.error("Data fetch failed:", err)
-            setError("Failed to fetch sleep data for the selected period.")
+            setLocalError("Failed to fetch sleep data for the selected period.")
         } finally {
             setLoadingData(false)
         }
     }
 
     const performAnalysis = async (p = period) => {
-        setAnalyzing(true)
-        setError(null)
-        setInsight(null)
+        setLocalError(null)
         try {
-            const response = await axios.post('http://localhost:8000/api/analyze/sleep/advanced', { period: p }, { timeout: 600000 })
-            setInsight(response.data.insight)
-            setData(response.data.data_used)
+            // First ensure we have data (optional, but good practice if we want to show charts immediately)
+            // But since we want to stream thoughts, let's just trigger both.
+            // Actually, let's just use the stream endpoint which returns data + stream? 
+            // Our stream implementation only returns text. 
+            // So we should fetch data first/parallel if we don't have it.
+
+            if (!data) {
+                await fetchDataOnly(p);
+            }
+
+            await processStream('http://localhost:8000/api/analyze/sleep/advanced', { period: p });
+
         } catch (err) {
             console.error("Analysis failed:", err)
-            setError("Failed to generate advanced sleep analysis. Ensure your data files are in the 'cleaned' folder and Ollama is running.")
-        } finally {
-            setAnalyzing(false)
+            setLocalError("Failed to start analysis.")
         }
     }
 
@@ -57,11 +75,8 @@ export function SleepAnalysis() {
 
     const handlePeriodChange = (newPeriod) => {
         setPeriod(newPeriod)
-        if (insight) {
-            performAnalysis(newPeriod)
-        } else {
-            fetchDataOnly(newPeriod)
-        }
+        resetStream() // Reset previous AI analysis
+        fetchDataOnly(newPeriod)
     }
 
     useEffect(() => {
@@ -222,33 +237,18 @@ export function SleepAnalysis() {
                                 <Sparkles className="h-5 w-5 text-sky-500" />
                                 AI Sleep Insights
                             </CardTitle>
-                            {insight && (
+                            {(finalResponse || isStreaming) && (
                                 <div className="px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 text-xs font-semibold capitalize border border-sky-200 dark:border-sky-800/50">
                                     {period === 'week' ? '7-Day Report' : '30-Day Report'}
                                 </div>
                             )}
                         </div>
-                        {insight && (
+                        {(finalResponse || isStreaming) && (
                             <CardDescription>Comprehensive analysis for the last {period === 'week' ? '7 days' : '30 days'} based on your health metrics</CardDescription>
                         )}
                     </CardHeader>
                     <CardContent>
-                        {analyzing ? (
-                            <div className="flex items-center gap-4 py-4">
-                                <div className="relative flex-shrink-0">
-                                    <Moon className="h-8 w-8 text-sky-500 animate-pulse" />
-                                    <Sparkles className="h-4 w-4 text-sky-500 absolute -top-1 -right-1 animate-bounce" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-medium">Consulting AI Sleep Specialist...</h3>
-                                    <p className="text-sm text-muted-foreground">Aggregating vitals and analyzing patterns.</p>
-                                </div>
-                            </div>
-                        ) : insight ? (
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <ReactMarkdown>{insight}</ReactMarkdown>
-                            </div>
-                        ) : (
+                        {!isStreaming && !finalResponse && !thoughts ? (
                             <div className="grid grid-cols-3 items-center gap-4 py-4">
                                 <div className="flex items-center gap-4 col-span-1">
                                     <Moon className="h-8 w-8 text-sky-500 flex-shrink-0 opacity-50" />
@@ -265,6 +265,29 @@ export function SleepAnalysis() {
                                         Start Analysis
                                     </Button>
                                 </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Thoughts Section */}
+                                {(isThinking || thoughts) && (
+                                    <div className="rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-400 font-mono text-xs leading-relaxed max-h-60 overflow-y-auto">
+                                        <div className="flex items-center gap-2 mb-2 text-sky-500 font-semibold uppercase tracking-wider text-[10px]">
+                                            <Sparkles className="h-3 w-3 animate-pulse" />
+                                            AI Thought Process
+                                        </div>
+                                        <div className="whitespace-pre-wrap opacity-80">
+                                            {thoughts}
+                                            {isThinking && <span className="inline-block w-1.5 h-3 ml-1 bg-sky-500 animate-pulse" />}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Final Response */}
+                                {finalResponse && (
+                                    <div className="prose prose-sm dark:prose-invert max-w-none animate-in fade-in duration-700">
+                                        <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </CardContent>

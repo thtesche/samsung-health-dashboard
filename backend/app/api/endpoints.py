@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Body
+from fastapi.responses import StreamingResponse
 from ..services.data_loader import DataLoader
 from ..services.ai_service import ai_service
 import os
@@ -59,10 +60,14 @@ async def analyze_file(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/analyze/sleep/advanced")
 async def analyze_sleep_advanced(
     period: str = Body(..., embed=True),
-    skip_analysis: bool = Body(False, embed=True)
+    skip_analysis: bool = Body(False, embed=True),
+    stream: bool = Body(False, embed=True)
 ):
     """Generate advanced sleep insights or just fetch data."""
     try:
@@ -75,6 +80,12 @@ async def analyze_sleep_advanced(
         if skip_analysis:
             return {"period": period, "insight": None, "data_used": data}
             
+        if stream:
+            return StreamingResponse(
+                ai_service.analyze_sleep_advanced(data, period, stream=True),
+                media_type="text/event-stream"
+            )
+            
         insight = ai_service.analyze_sleep_advanced(data, period)
         return {"period": period, "insight": insight, "data_used": data}
         
@@ -84,7 +95,8 @@ async def analyze_sleep_advanced(
 @router.post("/analyze/heart_rate/advanced")
 async def analyze_heart_rate_advanced(
     period: str = Body(..., embed=True),
-    skip_analysis: bool = Body(False, embed=True)
+    skip_analysis: bool = Body(False, embed=True),
+    stream: bool = Body(False, embed=True)
 ):
     """Generate advanced heart rate insights or just fetch data."""
     try:
@@ -97,6 +109,12 @@ async def analyze_heart_rate_advanced(
             
         if skip_analysis:
             return {"period": period, "insight": None, "data_used": data}
+            
+        if stream:
+            return StreamingResponse(
+                ai_service.analyze_heart_rate_advanced(data, period, stream=True),
+                media_type="text/event-stream"
+            )
             
         insight = ai_service.analyze_heart_rate_advanced(data, period)
         return {"period": period, "insight": insight, "data_used": data}

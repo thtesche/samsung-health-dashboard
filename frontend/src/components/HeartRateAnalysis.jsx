@@ -7,17 +7,30 @@ import { Button } from './ui/button'
 import { DataChart } from './DataChart'
 import { cn } from '../lib/utils'
 
+import { useAIStream } from '../lib/useAIStream'
+
 export function HeartRateAnalysis() {
     const [period, setPeriod] = useState('week')
-    const [analyzing, setAnalyzing] = useState(false)
-    const [insight, setInsight] = useState(null)
     const [data, setData] = useState(null)
     const [loadingData, setLoadingData] = useState(false)
-    const [error, setError] = useState(null)
+    const [localError, setLocalError] = useState(null)
+
+    const {
+        processStream,
+        streamingContent,
+        thoughts,
+        finalResponse,
+        isThinking,
+        isStreaming,
+        error: streamError,
+        resetStream
+    } = useAIStream()
+
+    const error = localError || streamError;
 
     const fetchDataOnly = async (p = period) => {
         setLoadingData(true)
-        setError(null)
+        setLocalError(null)
         try {
             const response = await axios.post('http://localhost:8000/api/analyze/heart_rate/advanced', {
                 period: p,
@@ -26,35 +39,29 @@ export function HeartRateAnalysis() {
             setData(response.data.data_used)
         } catch (err) {
             console.error("Data fetch failed:", err)
-            setError("Failed to fetch heart rate data for the selected period.")
+            setLocalError("Failed to fetch heart rate data for the selected period.")
         } finally {
             setLoadingData(false)
         }
     }
 
     const performAnalysis = async (p = period) => {
-        setAnalyzing(true)
-        setError(null)
-        setInsight(null)
+        setLocalError(null)
         try {
-            const response = await axios.post('http://localhost:8000/api/analyze/heart_rate/advanced', { period: p }, { timeout: 600000 })
-            setInsight(response.data.insight)
-            setData(response.data.data_used)
+            if (!data) {
+                await fetchDataOnly(p);
+            }
+            await processStream('http://localhost:8000/api/analyze/heart_rate/advanced', { period: p });
         } catch (err) {
             console.error("Heart rate analysis failed:", err)
-            setError("Failed to generate heart rate analysis. Ensure your 'heart_rate.csv' and 'vitality_score.csv' files are in the 'cleaned' folder and Ollama is running.")
-        } finally {
-            setAnalyzing(false)
+            setLocalError("Failed to start analysis.")
         }
     }
 
     const handlePeriodChange = (newPeriod) => {
         setPeriod(newPeriod)
-        if (insight) {
-            performAnalysis(newPeriod)
-        } else {
-            fetchDataOnly(newPeriod)
-        }
+        resetStream()
+        fetchDataOnly(newPeriod)
     }
 
     useEffect(() => {
@@ -228,7 +235,7 @@ export function HeartRateAnalysis() {
                                 <Sparkles className="h-5 w-5 text-rose-600" />
                                 AI Heart Analysis
                             </CardTitle>
-                            {insight && (
+                            {(finalResponse || isStreaming) && (
                                 <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">
                                     {period === 'week' ? '7-Day Report' :
                                         period === 'month' ? '30-Day Report' :
@@ -236,27 +243,12 @@ export function HeartRateAnalysis() {
                                 </div>
                             )}
                         </div>
-                        {insight && (
+                        {(finalResponse || isStreaming) && (
                             <CardDescription>Advanced cardiovascular assessment and recovery metrics for the last {period === 'week' ? '7 days' : period === 'month' ? '30 days' : period === '90d' ? '90 days' : '180 days'}</CardDescription>
                         )}
                     </CardHeader>
                     <CardContent>
-                        {analyzing ? (
-                            <div className="flex items-center gap-4 py-4">
-                                <div className="relative flex-shrink-0">
-                                    <Heart className="h-8 w-8 text-rose-500 animate-pulse" />
-                                    <Sparkles className="h-4 w-4 text-rose-500 absolute -top-1 -right-1 animate-bounce" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-medium">Consulting Cardiovascular AI...</h3>
-                                    <p className="text-sm text-muted-foreground">Analyzing rhythm and recovery patterns.</p>
-                                </div>
-                            </div>
-                        ) : insight ? (
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <ReactMarkdown>{insight}</ReactMarkdown>
-                            </div>
-                        ) : (
+                        {!isStreaming && !finalResponse && !thoughts ? (
                             <div className="grid grid-cols-3 items-center gap-4 py-4">
                                 <div className="flex items-center gap-4 col-span-1">
                                     <Heart className="h-8 w-8 text-rose-500 flex-shrink-0 opacity-50" />
@@ -273,6 +265,29 @@ export function HeartRateAnalysis() {
                                         Start Analysis
                                     </Button>
                                 </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Thoughts Section */}
+                                {(isThinking || thoughts) && (
+                                    <div className="rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-400 font-mono text-xs leading-relaxed max-h-60 overflow-y-auto">
+                                        <div className="flex items-center gap-2 mb-2 text-rose-500 font-semibold uppercase tracking-wider text-[10px]">
+                                            <Sparkles className="h-3 w-3 animate-pulse" />
+                                            AI Thought Process
+                                        </div>
+                                        <div className="whitespace-pre-wrap opacity-80">
+                                            {thoughts}
+                                            {isThinking && <span className="inline-block w-1.5 h-3 ml-1 bg-rose-500 animate-pulse" />}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Final Response */}
+                                {finalResponse && (
+                                    <div className="prose prose-sm dark:prose-invert max-w-none animate-in fade-in duration-700">
+                                        <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </CardContent>
