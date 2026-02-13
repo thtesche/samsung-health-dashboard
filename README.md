@@ -40,8 +40,8 @@ Before you begin, ensure you have the following installed:
 
 2. Create and activate a virtual environment:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv ../venv
+   source ../venv/bin/activate  # On Windows: ..\venv\Scripts\activate
    ```
 
 3. Install dependencies:
@@ -51,9 +51,7 @@ Before you begin, ensure you have the following installed:
 
 4. Start the backend server:
    ```bash
-   # Run from the project root
-   cd ..
-   uvicorn backend.app.main:app --reload
+   uvicorn app.main:app --reload
    ```
    The API will be available at [http://localhost:8000](http://localhost:8000).
 
