@@ -4,7 +4,7 @@ import json
 from typing import Dict, Any
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwq" # mistral or llama3, user can change this
+MODEL_NAME = "deepseek-r1:14b" # mistral, llama3, qwq user can change this
 
 class AIService:
     def __init__(self):
@@ -58,7 +58,7 @@ class AIService:
                 "stream": False
             }
             
-            response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+            response = requests.post(OLLAMA_URL, json=payload, timeout=300)
             response.raise_for_status()
             result = response.json()
             return result.get('response', 'No response from AI.')
@@ -128,7 +128,7 @@ class AIService:
                 "stream": False
             }
             
-            response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+            response = requests.post(OLLAMA_URL, json=payload, timeout=600)
             response.raise_for_status()
             result = response.json()
             return result.get('response', 'No response from AI.')
@@ -191,7 +191,7 @@ class AIService:
                 "stream": False
             }
             
-            response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+            response = requests.post(OLLAMA_URL, json=payload, timeout=600)
             response.raise_for_status()
             result = response.json()
             return result.get('response', 'No response from AI.')

@@ -37,7 +37,7 @@ export function SleepAnalysis() {
         setError(null)
         setInsight(null)
         try {
-            const response = await axios.post('http://localhost:8000/api/analyze/sleep/advanced', { period: p })
+            const response = await axios.post('http://localhost:8000/api/analyze/sleep/advanced', { period: p }, { timeout: 600000 })
             setInsight(response.data.insight)
             setData(response.data.data_used)
         } catch (err) {
