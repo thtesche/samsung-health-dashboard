@@ -4,7 +4,7 @@ import json
 from typing import Dict, Any
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "mistral" # Or llama3, user can change this
+MODEL_NAME = "qwq" # mistral or llama3, user can change this
 
 class AIService:
     def __init__(self):
@@ -43,7 +43,8 @@ class AIService:
             data_summary = df.describe().to_string()
             prompt = f"""
             You are a health data analyst. Analyze the following Samsung Health data summary for '{filename}'.
-            Identify trends, anomalies, or interesting patterns. Keep it concise (3-4 bullet points).
+            Identify trends, anomalies, or interesting patterns. Keep it concise (3-4 bullet points). 
+            Format your response in Markdown.
             
             Data Summary:
             {data_summary}
@@ -116,6 +117,7 @@ class AIService:
             5. Personalized lifestyle recommendations to optimize heart health.
             
             Keep it professional, encouraging, and scientifically grounded. Use German if the user's data or language suggests it, but standard English is also acceptable unless specified otherwise.
+            Format your response in Markdown.
             """
             
             print(f"DEBUG: Sending prompt for {display_period} to Ollama")
@@ -180,6 +182,7 @@ class AIService:
             5. Concrete recommendations for improvement based on these {display_period}.
             
             Keep it professional and insightful.
+            Format your response in Markdown.
             """
             
             payload = {

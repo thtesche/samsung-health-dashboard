@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import ReactMarkdown from 'react-markdown'
 import { Sparkles, Moon, RefreshCcw, AlertCircle, Clock, Heart, Zap, Waves, Activity } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
@@ -245,7 +246,7 @@ export function SleepAnalysis() {
                             </div>
                         ) : insight ? (
                             <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{insight}</p>
+                                <ReactMarkdown>{insight}</ReactMarkdown>
                             </div>
                         ) : (
                             <div className="grid grid-cols-3 items-center gap-4 py-4">
