@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 import { Activity, Moon, Heart, FileText, ChevronRight, Menu, Brain, LayoutDashboard, Sparkles } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
@@ -214,7 +217,9 @@ function App() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="whitespace-pre-wrap leading-relaxed">{insight}</p>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{insight}</ReactMarkdown>
+                    </div>
                   </CardContent>
                 </Card>
               )}

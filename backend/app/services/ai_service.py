@@ -43,7 +43,7 @@ class AIService:
             data_summary = df.describe().to_string()
             system_instruction = """You are a health data analyst. 
             Identify trends, anomalies, or interesting patterns. Keep it concise (3-4 bullet points). 
-            Format your response in Markdown."""
+            Format your response in Markdown. Do not include any salutations (e.g., 'Dear user') or signatures (e.g., 'Sincerely' or name/title at the end). Start directly with the findings."""
             
             prompt = f"""
             Analyze the following Samsung Health data summary for '{filename}'.
@@ -130,7 +130,7 @@ class AIService:
             system_instruction = f"""You are a specialized cardiologist and health data analyst. 
             This is a {display_period.upper()} ANALYSIS REPORT (From {start_date} to {end_date}).
             
-            Then, provide the final report in Markdown."""
+            Format your response in Markdown. Do not include any salutations (e.g., 'Dear User') or signatures (e.g., 'Professionally, [Your Name]' or your title/specialty at the end). Start the report directly with the content."""
             
             prompt = f"""
             Analyze the following Samsung Health heart rate data for this {display_period} report.
@@ -227,7 +227,7 @@ class AIService:
             system_instruction = f"""You are a specialized sleep doctor and data analyst. 
             This is a {display_period.upper()} SLEEP ANALYSIS REPORT (From {start_date} to {end_date}).
             
-            Then, provide the final report in Markdown."""
+            Format your response in Markdown. Do not include any salutations (e.g., 'Dear User') or signatures (e.g., 'Best regards, Dr. Sleep' or personal names/titles at the end). Start the report directly with the analysis."""
             
             prompt = f"""
             Analyze the following Samsung Health sleep data for this {display_period} report.

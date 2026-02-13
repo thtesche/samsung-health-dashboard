@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 import { Sparkles, Moon, RefreshCcw, AlertCircle, Clock, Heart, Zap, Waves, Activity } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
@@ -299,7 +301,7 @@ export function SleepAnalysis() {
                                 {/* Final Response */}
                                 {finalResponse && (
                                     <div className="prose prose-sm dark:prose-invert max-w-none animate-in fade-in duration-700">
-                                        <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{finalResponse}</ReactMarkdown>
                                     </div>
                                 )}
                             </div>
