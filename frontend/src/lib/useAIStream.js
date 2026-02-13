@@ -45,6 +45,8 @@ export function useAIStream() {
 
                 const chunk = decoder.decode(value, { stream: true });
                 accumulatedText += chunk;
+                console.log("Stream Chunk:", chunk); // DEBUG
+                // console.log("Accumulated:", accumulatedText); // DEBUG
                 // setStreamingContent(prev => prev + chunk);
 
                 // Parse <think> tags

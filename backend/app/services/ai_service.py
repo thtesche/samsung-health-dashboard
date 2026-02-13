@@ -41,33 +41,56 @@ class AIService:
         try:
             # Construct Prompt
             data_summary = df.describe().to_string()
-            prompt = f"""
-            You are a health data analyst. Analyze the following Samsung Health data summary for '{filename}'.
+            system_instruction = """You are a health data analyst. 
             Identify trends, anomalies, or interesting patterns. Keep it concise (3-4 bullet points). 
-            Format your response in Markdown.
+            Format your response in Markdown."""
+            
+            prompt = f"""
+            Analyze the following Samsung Health data summary for '{filename}'.
             
             Data Summary:
             {data_summary}
-            
-            Analysis:
             """
             
             payload = {
                 "model": MODEL_NAME,
                 "prompt": prompt,
+                "system": system_instruction,
             }
 
             if stream:
                 payload["stream"] = True
                 response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=300)
                 response.raise_for_status()
+                
+                has_started_thinking = False
+                has_ended_thinking = False
+                
                 for line in response.iter_lines():
                     if line:
                         decoded_line = line.decode('utf-8')
                         try:
                             json_line = json.loads(decoded_line)
-                            if 'response' in json_line:
+                            
+                            # Handle native 'thinking' field from Ollama/DeepSeek
+                            if 'thinking' in json_line and json_line['thinking']:
+                                if not has_started_thinking:
+                                    yield "<think>"
+                                    has_started_thinking = True
+                                yield json_line['thinking']
+                            
+                            # Handle 'response' field
+                            if 'response' in json_line and json_line['response']:
+                                if has_started_thinking and not has_ended_thinking:
+                                    yield "</think>"
+                                    has_ended_thinking = True
                                 yield json_line['response']
+                                
+                            # Ensure we close think tag if done
+                            if json_line.get('done') and has_started_thinking and not has_ended_thinking:
+                                yield "</think>"
+                                has_ended_thinking = True
+                                
                         except:
                             pass
             else:
@@ -103,34 +126,32 @@ class AIService:
             end_date = data.get('hr_metrics', [{}])[-1].get('day', 'unknown') if data.get('hr_metrics') else 'unknown'
 
             # Construct a detailed prompt
+            # Construct system instruction and prompt
+            system_instruction = f"""You are a specialized cardiologist and health data analyst. 
+            This is a {display_period.upper()} ANALYSIS REPORT (From {start_date} to {end_date}).
+            
+            Then, provide the final report in Markdown."""
+            
             prompt = f"""
-            [SYSTEM: CRITICAL HEALTH REPORT DURATION UPDATE]
-            THIS IS A {display_period.upper()} ANALYSIS REPORT. 
-            DATE RANGE: From {start_date} to {end_date}.
+            Analyze the following Samsung Health heart rate data for this {display_period} report.
             
-            You are a specialized cardiologist and health data analyst. Analyze the following Samsung Health heart rate data for this {display_period} report.
+            Metrics summary:
+            - Average Heart Rate: {hr_avg.get('value', 0):.1f} bpm (Trend: {hr_avg.get('trend', 0):+.1f}%)
+            - Minimum Heart Rate: {hr_min.get('value', 0):.1f} bpm (Trend: {hr_min.get('trend', 0):+.1f}%)
+            - Maximum Heart Rate: {hr_max.get('value', 0):.1f} bpm (Trend: {hr_max.get('trend', 0):+.1f}%)
+            - Average HRV: {hrv.get('value', 0):.1f} ms (Trend: {hrv.get('trend', 0):+.1f}%)
             
-            CRITICAL INSTRUCTION: You must explicitly acknowledge that this report covers the last {display_period} (from {start_date} to {end_date}). 
-            Do NOT refer to this as a 30-day or week-long report.
-            
-            Metrics summary for the {display_period} period:
-            - Average Heart Rate: {hr_avg.get('value', 0):.1f} bpm (Trend over previous period: {hr_avg.get('trend', 0):+.1f}%)
-            - Minimum Heart Rate: {hr_min.get('value', 0):.1f} bpm (Trend over previous period: {hr_min.get('trend', 0):+.1f}%)
-            - Maximum Heart Rate: {hr_max.get('value', 0):.1f} bpm (Trend over previous period: {hr_max.get('trend', 0):+.1f}%)
-            - Average HRV (Heart Rate Variability): {hrv.get('value', 0):.1f} ms (Trend over previous period: {hrv.get('trend', 0):+.1f}%)
-            
-            Daily Average Trend (Last 30 entries for context):
+            Daily Average Trend (Last 30 entries):
             {json.dumps(data.get('hr_metrics', [])[-30:])}
             
             Please provide:
-            1. An assessment of overall cardiovascular health based on these metrics for this specific {display_period} period.
-            2. Interpretation of resting heart rate (minimum HR) and regular average over the {display_period}.
+            1. An assessment of overall cardiovascular health.
+            2. Interpretation of resting heart rate and regular average.
             3. Significance of the HRV trend for long-term recovery.
-            4. Potential red flags or positive signs in the trends over these {display_period}.
-            5. Personalized lifestyle recommendations to optimize heart health.
+            4. Potential red flags or positive signs.
+            5. Personalized lifestyle recommendations.
             
-            Keep it professional, encouraging, and scientifically grounded. Use German if the user's data or language suggests it, but standard English is also acceptable unless specified otherwise.
-            Format your response in Markdown.
+            Keep it professional, encouraging, and scientifically grounded. Use German if the user's data or language suggests it.
             """
             
             print(f"DEBUG: Sending prompt for {display_period} to Ollama")
@@ -138,19 +159,41 @@ class AIService:
             payload = {
                 "model": MODEL_NAME,
                 "prompt": prompt,
+                "system": system_instruction,
             }
 
             if stream:
                 payload["stream"] = True
                 response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
                 response.raise_for_status()
+                
+                has_started_thinking = False
+                has_ended_thinking = False
+                
                 for line in response.iter_lines():
                     if line:
                         decoded_line = line.decode('utf-8')
                         try:
                             json_line = json.loads(decoded_line)
-                            if 'response' in json_line:
+                            
+                            # Handle native 'thinking' field
+                            if 'thinking' in json_line and json_line['thinking']:
+                                if not has_started_thinking:
+                                    yield "<think>"
+                                    has_started_thinking = True
+                                yield json_line['thinking']
+
+                            # Handle 'response' field
+                            if 'response' in json_line and json_line['response']:
+                                if has_started_thinking and not has_ended_thinking:
+                                    yield "</think>"
+                                    has_ended_thinking = True
                                 yield json_line['response']
+
+                            # Ensure we close think tag if done
+                            if json_line.get('done') and has_started_thinking and not has_ended_thinking:
+                                yield "</think>"
+                                has_ended_thinking = True
                         except:
                             pass
             else:
@@ -180,53 +223,73 @@ class AIService:
             end_date = data.get('sleep_metrics', [{}])[-1].get('day', 'unknown') if data.get('sleep_metrics') else 'unknown'
 
             # Construct a detailed prompt
+            # Construct system instruction and prompt
+            system_instruction = f"""You are a specialized sleep doctor and data analyst. 
+            This is a {display_period.upper()} SLEEP ANALYSIS REPORT (From {start_date} to {end_date}).
+            
+            Then, provide the final report in Markdown."""
+            
             prompt = f"""
-            [SYSTEM: CRITICAL HEALTH REPORT DURATION UPDATE]
-            THIS IS A {display_period.upper()} SLEEP ANALYSIS REPORT. 
-            DATE RANGE: From {start_date} to {end_date}.
+            Analyze the following Samsung Health sleep data for this {display_period} report.
             
-            You are a specialized sleep doctor and data analyst. Analyze the following Samsung Health sleep data for this {display_period} report.
-            
-            CRITICAL INSTRUCTION: You must explicitly acknowledge that this report covers the last {display_period} (from {start_date} to {end_date}).
-            Do NOT refer to this as a 30-day or week-long report.
-            
-            Metrics summary for the {display_period} period:
+            Metrics summary:
             - Avg Sleep duration: {duration.get('value', 0) / 60 if duration.get('value') else 0:.1f} hours
             - Sleep Phases (Total min): {json.dumps(data.get('stages_summary', {}))}
             - Avg Heart Rate: {hr.get('value', 0) if hr.get('value') else 0:.1f} bpm (Min: {hr.get('min', 0) if hr.get('min') else 0:.1f})
             - Avg SpO2 (Oxygen): {spo2.get('value', 0) if spo2.get('value') else 0:.1f}% (Min: {spo2.get('min', 0) if spo2.get('min') else 0:.1f}%)
             - Avg HRV (Recovery): {hrv.get('value', 0) if hrv.get('value') else 0:.1f} ms
             
-            Sleep Trend (Last 30 entries for context):
+            Sleep Trend (Last 30 entries):
             {json.dumps(data.get('sleep_metrics', [])[-30:])}
             
             Please provide:
-            1. A summary of sleep quality and consistency over the {display_period}.
-            2. Detailed evaluation of sleep stage distribution (REM, Deep, Light) for this period.
-            3. Relationship between heart rate/HRV and sleep recovery trends.
-            4. Evaluation of oxygen saturation (looking for potential issues).
-            5. Concrete recommendations for improvement based on these {display_period}.
+            1. A summary of sleep quality and consistency.
+            2. Detailed evaluation of sleep stage distribution.
+            3. Relationship between heart rate/HRV and sleep recovery.
+            4. Evaluation of oxygen saturation.
+            5. Concrete recommendations for improvement.
             
             Keep it professional and insightful.
-            Format your response in Markdown.
             """
             
             payload = {
                 "model": MODEL_NAME,
                 "prompt": prompt,
+                "system": system_instruction,
             }
 
             if stream:
                 payload["stream"] = True
                 response = requests.post(OLLAMA_URL, json=payload, stream=True, timeout=600)
                 response.raise_for_status()
+                
+                has_started_thinking = False
+                has_ended_thinking = False
+                
                 for line in response.iter_lines():
                     if line:
                         decoded_line = line.decode('utf-8')
                         try:
                             json_line = json.loads(decoded_line)
-                            if 'response' in json_line:
+                            
+                            # Handle native 'thinking' field
+                            if 'thinking' in json_line and json_line['thinking']:
+                                if not has_started_thinking:
+                                    yield "<think>"
+                                    has_started_thinking = True
+                                yield json_line['thinking']
+
+                            # Handle 'response' field
+                            if 'response' in json_line and json_line['response']:
+                                if has_started_thinking and not has_ended_thinking:
+                                    yield "</think>"
+                                    has_ended_thinking = True
                                 yield json_line['response']
+
+                            # Ensure we close think tag if done
+                            if json_line.get('done') and has_started_thinking and not has_ended_thinking:
+                                yield "</think>"
+                                has_ended_thinking = True
                         except:
                             pass
             else:

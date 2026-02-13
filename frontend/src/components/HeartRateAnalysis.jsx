@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import { Sparkles, Heart, RefreshCcw, AlertCircle, TrendingUp, TrendingDown, Activity, Zap } from 'lucide-react'
@@ -25,6 +25,15 @@ export function HeartRateAnalysis() {
         error: streamError,
         resetStream
     } = useAIStream()
+
+    const thoughtsScrollRef = useRef(null)
+
+    // Auto-scroll thoughts to bottom
+    useEffect(() => {
+        if (thoughtsScrollRef.current) {
+            thoughtsScrollRef.current.scrollTop = thoughtsScrollRef.current.scrollHeight
+        }
+    }, [thoughts])
 
     const error = localError || streamError;
 
@@ -268,9 +277,12 @@ export function HeartRateAnalysis() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {/* Thoughts Section */}
-                                {(isThinking || thoughts) && (
-                                    <div className="rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-400 font-mono text-xs leading-relaxed max-h-60 overflow-y-auto">
+                                {/* Thoughts Section - Hide when final response appears */}
+                                {(isThinking || thoughts) && !finalResponse && (
+                                    <div
+                                        ref={thoughtsScrollRef}
+                                        className="rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-400 font-mono text-xs leading-relaxed max-h-60 overflow-y-auto"
+                                    >
                                         <div className="flex items-center gap-2 mb-2 text-rose-500 font-semibold uppercase tracking-wider text-[10px]">
                                             <Sparkles className="h-3 w-3 animate-pulse" />
                                             AI Thought Process
