@@ -205,6 +205,8 @@ class DataLoader:
             prev_vitality_df = safe_fetch_range("vitality_score.csv", days * 2, days)
 
             stages_df = safe_fetch_range("sleep_stage.csv", days, 0)
+            snoring_df = safe_fetch_range("sleep_snoring.csv", days, 0)
+            prev_snoring_df = safe_fetch_range("sleep_snoring.csv", days * 2, days)
 
             # Create a summary for AI
             sleep_metrics = []
@@ -221,9 +223,27 @@ class DataLoader:
                     stages_summary = stages_df.groupby('stage')['duration_min'].sum().round(1).to_dict()
                 except: pass
 
+            def parse_snoring_duration(dur_str):
+                try:
+                    if pd.isna(dur_str) or not isinstance(dur_str, str): return 0
+                    h, m = map(int, dur_str.split(':'))
+                    return h * 60 + m
+                except: return 0
+
             def calc_trend(curr_val, prev_val):
                 if not curr_val or not prev_val or prev_val == 0: return 0
                 return ((curr_val - prev_val) / prev_val) * 100
+
+            # Process snoring data
+            snoring_minutes = None
+            snoring_trend = 0
+            if not snoring_df.empty:
+                snoring_df['duration_min'] = snoring_df['duration'].apply(parse_snoring_duration)
+                snoring_minutes = snoring_df['duration_min'].mean()
+                
+                if not prev_snoring_df.empty:
+                    prev_snoring_df['duration_min'] = prev_snoring_df['duration'].apply(parse_snoring_duration)
+                    snoring_trend = calc_trend(snoring_minutes, prev_snoring_df['duration_min'].mean())
 
             summary = {
                 "sleep_metrics": sleep_metrics,
@@ -250,6 +270,10 @@ class DataLoader:
                     "hrv": {
                         "value": vitality_df['shrv_value'].mean() if not vitality_df.empty else None,
                         "trend": calc_trend(vitality_df['shrv_value'].mean(), prev_vitality_df['shrv_value'].mean()) if not vitality_df.empty and not prev_vitality_df.empty else 0
+                    },
+                    "snoring": {
+                        "value": snoring_minutes,
+                        "trend": snoring_trend
                     }
                 }
             }

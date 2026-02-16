@@ -236,6 +236,24 @@ export function SleepAnalysis() {
                                 <p className="text-xs text-muted-foreground">Min {data.metrics.spo2.min?.toFixed(1) || 'N/A'}%</p>
                             </CardContent>
                         </Card>
+
+                        {/* 6. Snoring */}
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Activity className="h-3 w-3" /> Snoring
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.snoring.trend} />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {data.metrics.snoring.value !== null ? `${data.metrics.snoring.value.toFixed(1)} min` : 'N/A'}
+                                </div>
+                                <p className="text-xs text-muted-foreground">Avg per night</p>
+                            </CardContent>
+                        </Card>
                     </div>
                 )}
 

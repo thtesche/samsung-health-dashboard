@@ -4,7 +4,7 @@ import json
 from typing import Dict, Any
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "deepseek-r1:14b" # mistral, llama3, qwq user can change this
+MODEL_NAME = "phi4" # mistral, llama3, qwq user can change this
 
 class AIService:
     def __init__(self):
@@ -248,6 +248,7 @@ class AIService:
             spo2 = metrics.get('spo2', {})
             hrv = metrics.get('hrv', {})
             duration = metrics.get('sleep_duration', {})
+            snoring = metrics.get('snoring', {})
 
             # Get the date range for better context
             start_date = data.get('sleep_metrics', [{}])[0].get('day', 'unknown') if data.get('sleep_metrics') else 'unknown'
@@ -269,6 +270,7 @@ class AIService:
             - Avg Heart Rate: {hr.get('value', 0) if hr.get('value') else 0:.1f} bpm (Min: {hr.get('min', 0) if hr.get('min') else 0:.1f})
             - Avg SpO2 (Oxygen): {spo2.get('value', 0) if spo2.get('value') else 0:.1f}% (Min: {spo2.get('min', 0) if spo2.get('min') else 0:.1f}%)
             - Avg HRV (Recovery): {hrv.get('value', 0) if hrv.get('value') else 0:.1f} ms
+            - Avg Snoring Duration: {snoring.get('value', 0) if snoring.get('value') else 0:.1f} min (Trend: {snoring.get('trend', 0):+.1f}%)
             
             Sleep Trend (Last 30 entries):
             {json.dumps(data.get('sleep_metrics', [])[-30:])}
@@ -278,7 +280,8 @@ class AIService:
             2. Detailed evaluation of sleep stage distribution.
             3. Relationship between heart rate/HRV and sleep recovery.
             4. Evaluation of oxygen saturation.
-            5. Concrete recommendations for improvement.
+            5. Analysis of snoring patterns and their impact on sleep quality.
+            6. Concrete recommendations for improvement.
             
             Keep it professional and insightful.
             """
