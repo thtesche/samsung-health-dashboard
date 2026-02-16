@@ -159,7 +159,7 @@ export function HeartRateAnalysis() {
                 )}
 
                 {data?.metrics && (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         <Card className="flex flex-col h-full">
                             <CardHeader className="pb-2">
                                 <div className="flex items-center">
@@ -231,6 +231,42 @@ export function HeartRateAnalysis() {
                             <CardContent>
                                 <div className="text-2xl font-bold">{data.metrics.hrv.value?.toFixed(1) || 'N/A'} <span className="text-xs font-normal text-muted-foreground">ms</span></div>
                                 <p className="text-xs text-muted-foreground">Recovery capacity</p>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Activity className="h-3 w-3" /> Stress Score
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.stress.trend} invert />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{data.metrics.stress.value?.toFixed(1) || 'N/A'}</div>
+                                <p className="text-xs text-muted-foreground">Average for {period}</p>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="flex flex-col h-full md:col-span-2">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <TrendingUp className="h-3 w-3" /> Blood Pressure
+                                    </CardTitle>
+                                    <div className="flex gap-2 ml-auto">
+                                        <TrendBadge trend={data.metrics.blood_pressure.systolic_trend} invert />
+                                        <TrendBadge trend={data.metrics.blood_pressure.diastolic_trend} invert />
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {data.metrics.blood_pressure.systolic ? `${data.metrics.blood_pressure.systolic.toFixed(0)}/${data.metrics.blood_pressure.diastolic.toFixed(0)}` : 'N/A'}
+                                    <span className="text-xs font-normal text-muted-foreground ml-2">mmHg</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Average reading</p>
                             </CardContent>
                         </Card>
                     </div>

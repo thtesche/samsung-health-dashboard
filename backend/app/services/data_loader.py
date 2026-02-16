@@ -103,6 +103,12 @@ class DataLoader:
 
             sleep_df = safe_fetch_range("sleep.csv", days, 0)
 
+            stress_df = safe_fetch_range("stress.csv", days, 0)
+            prev_stress_df = safe_fetch_range("stress.csv", days * 2, days)
+
+            bp_df = safe_fetch_range("blood_pressure.csv", days, 0)
+            prev_bp_df = safe_fetch_range("blood_pressure.csv", days * 2, days)
+
             def calc_trend(curr_val, prev_val):
                 if not curr_val or not prev_val or prev_val == 0: return 0
                 return ((curr_val - prev_val) / prev_val) * 100
@@ -165,6 +171,16 @@ class DataLoader:
                     "hrv": {
                         "value": vitality_df['shrv_value'].mean() if not vitality_df.empty else None,
                         "trend": calc_trend(vitality_df['shrv_value'].mean(), prev_vitality_df['shrv_value'].mean()) if not vitality_df.empty and not prev_vitality_df.empty else 0
+                    },
+                    "stress": {
+                        "value": stress_df['score'].mean() if not stress_df.empty else None,
+                        "trend": calc_trend(stress_df['score'].mean(), prev_stress_df['score'].mean()) if not stress_df.empty and not prev_stress_df.empty else 0
+                    },
+                    "blood_pressure": {
+                        "systolic": bp_df['systolic'].mean() if not bp_df.empty else None,
+                        "diastolic": bp_df['diastolic'].mean() if not bp_df.empty else None,
+                        "systolic_trend": calc_trend(bp_df['systolic'].mean(), prev_bp_df['systolic'].mean()) if not bp_df.empty and not prev_bp_df.empty else 0,
+                        "diastolic_trend": calc_trend(bp_df['diastolic'].mean(), prev_bp_df['diastolic'].mean()) if not bp_df.empty and not prev_bp_df.empty else 0
                     }
                 }
             }

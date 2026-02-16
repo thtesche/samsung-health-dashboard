@@ -151,6 +151,8 @@ class AIService:
             hr_min = metrics.get('hr_min', {})
             hr_max = metrics.get('hr_max', {})
             hrv = metrics.get('hrv', {})
+            stress = metrics.get('stress', {})
+            bp = metrics.get('blood_pressure', {})
 
             # Get the date range for better context
             start_date = data.get('hr_metrics', [{}])[0].get('day', 'unknown') if data.get('hr_metrics') else 'unknown'
@@ -164,13 +166,15 @@ class AIService:
             Format your response in Markdown. Do not include any salutations (e.g., 'Dear User') or signatures (e.g., 'Professionally, [Your Name]' or your title/specialty at the end). Start the report directly with the content."""
             
             prompt = f"""
-            Analyze the following Samsung Health heart rate data for this {display_period} report.
+            Analyze the following Samsung Health heart rate and related cardiovascular data for this {display_period} report.
             
             Metrics summary:
-            - Average Heart Rate: {hr_avg.get('value', 0):.1f} bpm (Trend: {hr_avg.get('trend', 0):+.1f}%)
-            - Minimum Heart Rate: {hr_min.get('value', 0):.1f} bpm (Trend: {hr_min.get('trend', 0):+.1f}%)
-            - Maximum Heart Rate: {hr_max.get('value', 0):.1f} bpm (Trend: {hr_max.get('trend', 0):+.1f}%)
-            - Average HRV: {hrv.get('value', 0):.1f} ms (Trend: {hrv.get('trend', 0):+.1f}%)
+            - Average Heart Rate: {hr_avg.get('value', 0) if hr_avg.get('value') else 0:.1f} bpm (Trend: {hr_avg.get('trend', 0):+.1f}%)
+            - Minimum Heart Rate: {hr_min.get('value', 0) if hr_min.get('value') else 0:.1f} bpm (Trend: {hr_min.get('trend', 0):+.1f}%)
+            - Maximum Heart Rate: {hr_max.get('value', 0) if hr_max.get('value') else 0:.1f} bpm (Trend: {hr_max.get('trend', 0):+.1f}%)
+            - Average HRV: {hrv.get('value', 0) if hrv.get('value') else 0:.1f} ms (Trend: {hrv.get('trend', 0):+.1f}%)
+            - Average Stress Score: {stress.get('value', 0) if stress.get('value') else 0:.1f} (Trend: {stress.get('trend', 0):+.1f}%)
+            - Blood Pressure: {bp.get('systolic', 0) if bp.get('systolic') else 0:.1f}/{bp.get('diastolic', 0) if bp.get('diastolic') else 0:.1f} mmHg
             
             Daily Average Trend (Last 30 entries):
             {json.dumps(data.get('hr_metrics', [])[-30:])}
@@ -178,9 +182,10 @@ class AIService:
             Please provide:
             1. An assessment of overall cardiovascular health.
             2. Interpretation of resting heart rate and regular average.
-            3. Significance of the HRV trend for long-term recovery.
-            4. Potential red flags or positive signs.
-            5. Personalized lifestyle recommendations.
+            3. Significance of the HRV and Stress trends for long-term recovery and mental well-being.
+            4. Evaluation of Blood Pressure levels if data is available.
+            5. Potential red flags or positive signs.
+            6. Personalized lifestyle recommendations.
             
             Keep it professional, encouraging, and scientifically grounded. Use German if the user's data or language suggests it.
             """
