@@ -46,14 +46,18 @@ async def get_data_summary(filename: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/analyze/{filename}")
-async def analyze_file(filename: str):
+async def analyze_file(filename: str, stream: bool = Body(False, embed=True)):
     """Generate AI insights for a specific file."""
     try:
-        # Load a chunk of data for analysis (e.g. last 30 days or first 100 rows)
-        # For simplicity, loading first 100 rows or using summary
         df = data_loader.load_csv(filename)
         data_subset = df.head(100).to_dict(orient="records")
         
+        if stream:
+            return StreamingResponse(
+                ai_service.analyze_data(filename, data_subset, stream=True),
+                media_type="text/event-stream"
+            )
+            
         insight = ai_service.analyze_data(filename, data_subset)
         return {"filename": filename, "insight": insight}
     except FileNotFoundError:

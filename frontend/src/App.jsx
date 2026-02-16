@@ -10,6 +10,7 @@ import { DataChart } from './components/DataChart'
 import { SleepAnalysis } from './components/SleepAnalysis'
 import { HeartRateAnalysis } from './components/HeartRateAnalysis'
 import { cn } from './lib/utils'
+import { useAIStream } from './lib/useAIStream'
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -80,21 +81,40 @@ function App() {
     }
   }
 
-  const handleGenerateInsight = async () => {
-    if (!activeTab || activeTab === 'overview' || activeTab === 'sleep' || activeTab === 'activity' || activeTab === 'heart_rate') return;
+  const {
+    processStream,
+    thoughts,
+    finalResponse,
+    isThinking,
+    isStreaming,
+    error: streamError,
+    resetStream
+  } = useAIStream()
 
-    setAnalyzing(true)
-    setInsight(null)
+  const handleGenerateInsight = async () => {
+    if (!activeTab || ['overview', 'sleep', 'activity', 'heart_rate'].includes(activeTab)) return;
+
+    setInsight(null);
     try {
-      const response = await axios.post(`http://localhost:8000/api/analyze/${activeTab}`)
-      setInsight(response.data.insight)
+      await processStream(`http://localhost:8000/api/analyze/${activeTab}`);
     } catch (error) {
       console.error("Failed to generate insight:", error)
-      setInsight("Failed to generate insight. Ensure backend is running.")
-    } finally {
-      setAnalyzing(false)
     }
   }
+
+  // Effect to sync stream error with insight for generic tabs
+  useEffect(() => {
+    if (streamError && !['sleep', 'heart_rate'].includes(activeTab)) {
+      setInsight(`Error: ${streamError}`);
+    }
+  }, [streamError, activeTab]);
+
+  // Effect to sync stream response with insight for generic tabs
+  useEffect(() => {
+    if (finalResponse && !['sleep', 'heart_rate'].includes(activeTab)) {
+      setInsight(finalResponse);
+    }
+  }, [finalResponse, activeTab]);
 
   const SidebarItem = ({ icon: Icon, label, id, onClick }) => (
     <button
@@ -249,26 +269,43 @@ function App() {
                 <h2 className="text-2xl font-bold tracking-tight">{activeTab.replace('.csv', '').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h2>
                 <Button
                   onClick={handleGenerateInsight}
-                  disabled={analyzing}
+                  disabled={isStreaming}
                   className="gap-2"
                 >
                   <Sparkles className="h-4 w-4" />
-                  {analyzing ? "Analyzing..." : "Generate AI Insights"}
+                  {isStreaming ? "Analyzing..." : "Generate AI Insights"}
                 </Button>
               </div>
 
-              {insight && (
-                <Card className="bg-primary/5 border-primary/20">
+              {(insight || thoughts || isThinking) && (
+                <Card className="bg-primary/5 border-primary/20 overflow-hidden">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Sparkles className="h-5 w-5 text-primary" />
                       AI Analysis
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{insight}</ReactMarkdown>
-                    </div>
+                  <CardContent className="space-y-4">
+                    {/* Thoughts Section */}
+                    {(isThinking || thoughts) && !finalResponse && (
+                      <div className="rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-400 font-mono text-xs leading-relaxed max-h-60 overflow-y-auto">
+                        <div className="flex items-center gap-2 mb-2 text-primary font-semibold uppercase tracking-wider text-[10px]">
+                          <Sparkles className="h-3 w-3 animate-pulse" />
+                          AI Thought Process
+                        </div>
+                        <div className="whitespace-pre-wrap opacity-80">
+                          {thoughts}
+                          {isThinking && <span className="inline-block w-1.5 h-3 ml-1 bg-primary animate-pulse" />}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Final Response */}
+                    {insight && (
+                      <div className="prose prose-sm dark:prose-invert max-w-none animate-in fade-in duration-700">
+                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{insight}</ReactMarkdown>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
