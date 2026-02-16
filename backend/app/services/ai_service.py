@@ -68,16 +68,24 @@ class AIService:
         # Convert list of dicts to string summary for the prompt
         df = pd.DataFrame(data)
         
+        # Parse filename for the topic
+        topic = filename.replace('.csv', '').replace('_', ' ')
+        
         # Check if we should try Ollama
         try:
             # Construct Prompt
             data_summary = df.describe().to_string()
-            system_instruction = """You are a health data analyst. 
-            Identify trends, anomalies, or interesting patterns. Keep it concise (3-4 bullet points). 
-            Format your response in Markdown. Do not include any salutations (e.g., 'Dear user') or signatures (e.g., 'Sincerely' or name/title at the end). Start directly with the findings."""
+            system_instruction = f"""You are a specialized health data analyst. 
+            Your primary focus for this report is: {topic.upper()}.
+            
+            Identify trends, anomalies, or insights specifically related to {topic}. 
+            Treat 'create_time' columns solely as markers for when the data was recorded; do not analyze the timing itself unless it directly impacts {topic} (e.g., correlations with other metrics).
+            
+            Keep the report concise (3-5 focused bullet points).
+            Format your response in Markdown. Do not include any salutations or signatures. Start directly with the findings."""
             
             prompt = f"""
-            Analyze the following Samsung Health data summary for '{filename}'.
+            Analyze the following Samsung Health data summary for the topic: {topic}.
             
             Data Summary:
             {data_summary}

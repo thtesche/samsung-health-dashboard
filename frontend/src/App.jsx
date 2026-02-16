@@ -54,6 +54,7 @@ function App() {
     setSelectedFileData(null) // Reset while loading
     setChartConfig(null)
     setInsight(null)
+    resetStream()
 
     try {
       const response = await axios.get(`http://localhost:8000/api/data/${filename}?limit=50`)
