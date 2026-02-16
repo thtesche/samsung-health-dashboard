@@ -254,6 +254,24 @@ export function SleepAnalysis() {
                                 <p className="text-xs text-muted-foreground">Avg per night</p>
                             </CardContent>
                         </Card>
+
+                        {/* 7. Skin Temperature */}
+                        <Card className="flex flex-col h-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center">
+                                    <CardTitle className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-2">
+                                        <Activity className="h-3 w-3" /> Skin Temp
+                                    </CardTitle>
+                                    <TrendBadge trend={data.metrics.temperature.trend} />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {data.metrics.temperature.value !== null ? `${data.metrics.temperature.value.toFixed(2)}°C` : 'N/A'}
+                                </div>
+                                <p className="text-xs text-muted-foreground">Avg during sleep</p>
+                            </CardContent>
+                        </Card>
                     </div>
                 )}
 

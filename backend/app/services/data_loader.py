@@ -207,6 +207,8 @@ class DataLoader:
             stages_df = safe_fetch_range("sleep_stage.csv", days, 0)
             snoring_df = safe_fetch_range("sleep_snoring.csv", days, 0)
             prev_snoring_df = safe_fetch_range("sleep_snoring.csv", days * 2, days)
+            temp_df = safe_fetch_range("skin_temperature.csv", days, 0)
+            prev_temp_df = safe_fetch_range("skin_temperature.csv", days * 2, days)
 
             # Create a summary for AI
             sleep_metrics = []
@@ -220,7 +222,9 @@ class DataLoader:
             if not stages_df.empty and 'start_time' in stages_df.columns and 'end_time' in stages_df.columns:
                 try:
                     stages_df['duration_min'] = (pd.to_datetime(stages_df['end_time']) - pd.to_datetime(stages_df['start_time'])).dt.total_seconds() / 60
-                    stages_summary = stages_df.groupby('stage')['duration_min'].sum().round(1).to_dict()
+                    total_min = stages_df['duration_min'].sum()
+                    if total_min > 0:
+                        stages_summary = (stages_df.groupby('stage')['duration_min'].sum() / total_min * 100).round(1).to_dict()
                 except: pass
 
             def parse_snoring_duration(dur_str):
@@ -244,6 +248,14 @@ class DataLoader:
                 if not prev_snoring_df.empty:
                     prev_snoring_df['duration_min'] = prev_snoring_df['duration'].apply(parse_snoring_duration)
                     snoring_trend = calc_trend(snoring_minutes, prev_snoring_df['duration_min'].mean())
+
+            # Process temperature data
+            temp_avg = None
+            temp_trend = 0
+            if not temp_df.empty:
+                temp_avg = temp_df['temperature'].mean()
+                if not prev_temp_df.empty:
+                    temp_trend = calc_trend(temp_avg, prev_temp_df['temperature'].mean())
 
             summary = {
                 "sleep_metrics": sleep_metrics,
@@ -274,6 +286,10 @@ class DataLoader:
                     "snoring": {
                         "value": snoring_minutes,
                         "trend": snoring_trend
+                    },
+                    "temperature": {
+                        "value": temp_avg,
+                        "trend": temp_trend
                     }
                 }
             }

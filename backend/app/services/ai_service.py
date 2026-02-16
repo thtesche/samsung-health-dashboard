@@ -249,6 +249,7 @@ class AIService:
             hrv = metrics.get('hrv', {})
             duration = metrics.get('sleep_duration', {})
             snoring = metrics.get('snoring', {})
+            temp = metrics.get('temperature', {})
 
             # Get the date range for better context
             start_date = data.get('sleep_metrics', [{}])[0].get('day', 'unknown') if data.get('sleep_metrics') else 'unknown'
@@ -266,11 +267,12 @@ class AIService:
             
             Metrics summary:
             - Avg Sleep duration: {duration.get('value', 0) / 60 if duration.get('value') else 0:.1f} hours
-            - Sleep Phases (Total min): {json.dumps(data.get('stages_summary', {}))}
+            - Sleep Phases (Percentage): {json.dumps(data.get('stages_summary', {}))}%
             - Avg Heart Rate: {hr.get('value', 0) if hr.get('value') else 0:.1f} bpm (Min: {hr.get('min', 0) if hr.get('min') else 0:.1f})
             - Avg SpO2 (Oxygen): {spo2.get('value', 0) if spo2.get('value') else 0:.1f}% (Min: {spo2.get('min', 0) if spo2.get('min') else 0:.1f}%)
             - Avg HRV (Recovery): {hrv.get('value', 0) if hrv.get('value') else 0:.1f} ms
             - Avg Snoring Duration: {snoring.get('value', 0) if snoring.get('value') else 0:.1f} min (Trend: {snoring.get('trend', 0):+.1f}%)
+            - Avg Skin Temperature: {temp.get('value', 0) if temp.get('value') else 0:.2f}°C (Trend: {temp.get('trend', 0):+.1f}%)
             
             Sleep Trend (Last 30 entries):
             {json.dumps(data.get('sleep_metrics', [])[-30:])}
@@ -279,8 +281,8 @@ class AIService:
             1. A summary of sleep quality and consistency.
             2. Detailed evaluation of sleep stage distribution.
             3. Relationship between heart rate/HRV and sleep recovery.
-            4. Evaluation of oxygen saturation.
-            5. Analysis of snoring patterns and their impact on sleep quality.
+            4. Evaluation of oxygen saturation and snoring patterns.
+            5. Interpretation of skin temperature fluctuations during sleep.
             6. Concrete recommendations for improvement.
             
             Keep it professional and insightful.
