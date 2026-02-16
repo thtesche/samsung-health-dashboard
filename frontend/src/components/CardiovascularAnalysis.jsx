@@ -11,7 +11,7 @@ import { cn } from '../lib/utils'
 
 import { useAIStream } from '../lib/useAIStream'
 
-export function HeartRateAnalysis() {
+export function CardiovascularAnalysis() {
     const [period, setPeriod] = useState('week')
     const [data, setData] = useState(null)
     const [loadingData, setLoadingData] = useState(false)
@@ -42,7 +42,7 @@ export function HeartRateAnalysis() {
         setLoadingData(true)
         setLocalError(null)
         try {
-            const response = await axios.post('http://localhost:8000/api/analyze/heart_rate/advanced', {
+            const response = await axios.post('http://localhost:8000/api/analyze/cardiovascular/advanced', {
                 period: p,
                 skip_analysis: true
             })
@@ -61,7 +61,7 @@ export function HeartRateAnalysis() {
             if (!data) {
                 await fetchDataOnly(p);
             }
-            await processStream('http://localhost:8000/api/analyze/heart_rate/advanced', { period: p });
+            await processStream('http://localhost:8000/api/analyze/cardiovascular/advanced', { period: p });
         } catch (err) {
             console.error("Heart rate analysis failed:", err)
             setLocalError("Failed to start analysis.")
@@ -100,7 +100,7 @@ export function HeartRateAnalysis() {
             <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 -mx-6 px-6 py-4 border-b -mt-6 mb-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight">Heart Rate Analysis</h2>
+                        <h2 className="text-2xl font-bold tracking-tight">Cardiovascular Analysis</h2>
                         <p className="text-sm text-muted-foreground">Detailed cardiovascular overview, resting heart rate, and variability metrics.</p>
                     </div>
                     <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm p-1 rounded-lg border shadow-sm self-start md:self-center">
@@ -281,7 +281,7 @@ export function HeartRateAnalysis() {
                         <div className="flex items-center justify-between">
                             <CardTitle className="flex items-center gap-2">
                                 <Sparkles className="h-5 w-5 text-rose-600" />
-                                AI Heart Analysis
+                                AI Cardiovascular Analysis
                             </CardTitle>
                             {(finalResponse || isStreaming) && (
                                 <div className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold capitalize border border-rose-200 dark:border-rose-800/50">

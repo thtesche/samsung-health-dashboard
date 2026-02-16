@@ -101,31 +101,31 @@ async def get_ai_status():
     """Check AI (Ollama) connection status and current model."""
     return ai_service.check_ollama_status()
 
-@router.post("/analyze/heart_rate/advanced")
-async def analyze_heart_rate_advanced(
+@router.post("/analyze/cardiovascular/advanced")
+async def analyze_cardiovascular_advanced(
     period: str = Body(..., embed=True),
     skip_analysis: bool = Body(False, embed=True),
     stream: bool = Body(False, embed=True)
 ):
-    """Generate advanced heart rate insights or just fetch data."""
+    """Generate advanced cardiovascular insights or just fetch data."""
     try:
         period_map = {"week": 7, "month": 30, "90d": 90, "180d": 180}
         days = period_map.get(period, 30)
-        data = data_loader.aggregate_heart_rate_data(days)
+        data = data_loader.aggregate_cardiovascular_data(days)
         
         if not data or not data.get('metrics'):
-            raise HTTPException(status_code=404, detail="No heart rate data found for analysis")
+            raise HTTPException(status_code=404, detail="No cardiovascular data found for analysis")
             
         if skip_analysis:
             return {"period": period, "insight": None, "data_used": data}
             
         if stream:
             return StreamingResponse(
-                ai_service.analyze_heart_rate_advanced(data, period, stream=True),
+                ai_service.analyze_cardiovascular_advanced(data, period, stream=True),
                 media_type="text/event-stream"
             )
             
-        insight = ai_service.analyze_heart_rate_advanced(data, period)
+        insight = ai_service.analyze_cardiovascular_advanced(data, period)
         return {"period": period, "insight": insight, "data_used": data}
         
     except Exception as e:

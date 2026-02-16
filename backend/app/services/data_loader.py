@@ -63,7 +63,7 @@ class DataLoader:
         cutoff = pd.Timestamp.now() - pd.Timedelta(days=days)
         return df[df[time_col] >= cutoff]
 
-    def aggregate_heart_rate_data(self, days: int = 30) -> Dict[str, Any]:
+    def aggregate_cardiovascular_data(self, days: int = 30) -> Dict[str, Any]:
         """Aggregates heart rate and HRV data for advanced analysis."""
         summary = {}
         try:

@@ -8,7 +8,7 @@ import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { DataChart } from './components/DataChart'
 import { SleepAnalysis } from './components/SleepAnalysis'
-import { HeartRateAnalysis } from './components/HeartRateAnalysis'
+import { CardiovascularAnalysis } from './components/CardiovascularAnalysis'
 import { cn } from './lib/utils'
 import { useAIStream } from './lib/useAIStream'
 
@@ -160,7 +160,7 @@ function App() {
           />
           <SidebarItem
             icon={Heart}
-            label="Heart Rate"
+            label="Cardiovascular"
             id="heart_rate"
             onClick={() => { setActiveTab('heart_rate'); setInsight(null); setSelectedFileData(null); }}
           />
@@ -341,7 +341,7 @@ function App() {
           )}
 
           {activeTab === 'heart_rate' && (
-            <HeartRateAnalysis />
+            <CardiovascularAnalysis />
           )}
 
           {activeTab === 'activity' && (

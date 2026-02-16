@@ -147,7 +147,7 @@ class AIService:
         except Exception as e:
             return f"Error analyzing data: {str(e)}"
 
-    def analyze_heart_rate_advanced(self, data: Dict[str, Any], period_name: str, stream: bool = False):
+    def analyze_cardiovascular_advanced(self, data: Dict[str, Any], period_name: str, stream: bool = False):
         """
         Performs advanced analysis on heart rate data including resting HR and HRV.
         """
